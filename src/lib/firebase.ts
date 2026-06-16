@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import firebaseConfigJson from '../../firebase-applet-config.json';
@@ -72,9 +72,7 @@ export function handleFirestoreError(error: any, operationType: OperationType, p
   console.error(`Firestore Error [${path}]: `, JSON.stringify(errInfo));
   if (isQuotaExceeded) {
      console.warn("Quota Exceeded. Application degraded.");
-     return;
   }
-  throw new Error(JSON.stringify(errInfo));
 }
 
 export function handleStorageError(error: any, path: string) {
@@ -109,8 +107,11 @@ console.log('Firebase Configuration Check:', {
 
 const app = initializeApp(firebaseConfig);
 
-// Using initializeFirestore with experimental settings to improve connectivity in restricted environments
+// Using initializeFirestore with persistent local cache and experimental settings to improve connectivity in restricted environments
 export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  }),
   experimentalForceLongPolling: true,
 }, firebaseConfig.firestoreDatabaseId || '(default)');
 

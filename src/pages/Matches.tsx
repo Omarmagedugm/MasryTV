@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppStore } from '../store';
+import { useAppStore, useResolvedMatches } from '../store';
 import { ar } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
@@ -11,7 +11,8 @@ import ScoreSelector from '../components/ScoreSelector';
 import { getOptimizedImage } from '../lib/cloudinary';
 
 export default function Matches() {
-  const { matches, profile } = useAppStore();
+  const matches = useResolvedMatches();
+  const { profile } = useAppStore();
   const navigate = useNavigate();
   const [selectedSport, setSelectedSport] = useState<'all' | 'football'>('all');
   const [showPredictionsList, setShowPredictionsList] = useState<string | null>(null);

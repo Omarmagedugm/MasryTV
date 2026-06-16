@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAppStore } from "../store";
+import { useAppStore, useResolvedMatches } from "../store";
 import { auth, db } from "../lib/firebase";
 import toast from "react-hot-toast";
 import { formatDistanceToNow, format } from "date-fns";
@@ -50,10 +50,10 @@ import { SafeImage } from "../components/SafeImage";
 import { getOptimizedImage } from "../lib/cloudinary";
 
 export default function Home() {
+  const matches = useResolvedMatches();
   const {
     news,
     media,
-    matches,
     liveStream,
     profile,
     homeSections,
@@ -627,11 +627,11 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-8">
+                    <div className="p-5">
                       <h3 className="text-lg font-black text-slate-800 dark:text-white line-clamp-2 leading-tight min-h-[56px] group-hover:text-primary transition-colors">
                         {item.title}
                       </h3>
-                      <div className="mt-8 flex items-center justify-between border-t border-slate-50 dark:border-white/5 pt-6">
+                      <div className="mt-4 flex items-center justify-between border-t border-slate-50 dark:border-white/5 pt-4">
                         <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
                           <span className="material-symbols-outlined !text-[18px] text-primary">calendar_today</span>
                           {item.date ? format(new Date(item.date), "d MMM yyyy", { locale: ar }) : "اليوم"}

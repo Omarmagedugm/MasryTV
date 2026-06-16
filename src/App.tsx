@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import ScrollToTop from './components/ScrollToTop';
-import { useAppStore } from './store';
+import { useAppStore, useResolvedMatches } from './store';
 import { useFirestoreSync } from './hooks/useFirestore';
 import { auth, requestNotificationPermission } from './lib/firebase';
 
@@ -32,7 +32,7 @@ import WinCelebration from './components/WinCelebration';
 
 export default function App() {
   useFirestoreSync();
-  const matches = useAppStore(state => state.matches);
+  const matches = useResolvedMatches();
   const [showGoal, setShowGoal] = useState(false);
   const [showWin, setShowWin] = useState(false);
   const [scoredTeam, setScoredTeam] = useState('');

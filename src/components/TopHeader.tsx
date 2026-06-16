@@ -147,8 +147,8 @@ export default function TopHeader() {
             )}
           </div>
 
-          <div className="flex flex-col items-center justify-center flex-1">
-            {currentLogo && !imageError ? (
+          <div className="flex flex-col items-center justify-center flex-1 min-w-0 px-2 text-center">
+            {((appSettings?.logoType || 'image') === 'image' && currentLogo && !imageError) ? (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -165,7 +165,7 @@ export default function TopHeader() {
                 />
               </motion.div>
             ) : (
-              <h1 className="text-lg font-black tracking-tighter text-slate-800 dark:text-white uppercase line-clamp-1 max-w-[140px] text-center font-serif italic">
+              <h1 className="text-xs min-[360px]:text-sm min-[400px]:text-base sm:text-lg font-black tracking-normal text-slate-800 dark:text-white text-center whitespace-nowrap overflow-hidden text-ellipsis w-full font-sans">
                 {appSettings?.logoText || title}
               </h1>
             )}

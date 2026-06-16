@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
+import { useMemo } from 'react';
 
 export interface HomeSection {
   id: string;
@@ -675,8 +676,27 @@ export const useAppStore = create<AppState>()(
       name: 'masry-app-storage',
       partialize: (state) => {
         const { isAuthReady, ...rest } = state;
+        localStorage.setItem('masry-app-storage', JSON.stringify(rest));
         return rest;
       },
     }
   )
 );
+
+export const useResolvedMatches = () => {
+  const matches = useAppStore(state => state.matches);
+  const clubs = useAppStore(state => state.clubs);
+  return useMemo(() => {
+    if (!matches) return [];
+    return matches.map(m => {
+      const homeClub = clubs?.find(c => c.name.trim().toLowerCase() === m.homeTeam.trim().toLowerCase());
+      const awayClub = clubs?.find(c => c.name.trim().toLowerCase() === m.awayTeam.trim().toLowerCase());
+      return {
+        ...m,
+        homeLogo: homeClub?.logo || m.homeLogo,
+        awayLogo: awayClub?.logo || m.awayLogo,
+      };
+    });
+  }, [matches, clubs]);
+};
+

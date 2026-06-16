@@ -141,29 +141,39 @@ export function useFirestoreSync() {
 
       const fetchWithCache = async (cacheKey: string, fetcher: () => Promise<any>, ttlHours = 24) => {
         const isAdmin = useAppStore.getState().profile?.role === 'admin';
+        let cachedData: any = null;
+        let hasCache = false;
+        
         // Always try to load from cache first for immediate UI updates
         try {
           const cached = localStorage.getItem(`fs_cache_${cacheKey}`);
           if (cached) {
             const { data, timestamp } = JSON.parse(cached);
-            // Return cached data immediately if not admin (admins need fresh data)
+            cachedData = data;
+            hasCache = true;
+            // Return cached data immediately if not admin (admins need fresh data) and not expired
             if (!isAdmin && Date.now() - timestamp < ttlHours * 60 * 60 * 1000) {
               return data;
             }
-            // For admins or expired cache, return data but we'll fetch fresh in background
-            if (!isAdmin) return data; 
           }
         } catch (e) { /* ignore */ }
 
-        const data = await fetcher();
-        
         try {
-          localStorage.setItem(`fs_cache_${cacheKey}`, JSON.stringify({ data, timestamp: Date.now() }));
-        } catch (e) {
-          // ignore cache save errors
+          const data = await fetcher();
+          try {
+            localStorage.setItem(`fs_cache_${cacheKey}`, JSON.stringify({ data, timestamp: Date.now() }));
+          } catch (e) {
+            // ignore cache save errors
+          }
+          return data;
+        } catch (err: any) {
+          // If fetch fails but we have cached data (even if expired or admin), fallback gracefully!
+          if (hasCache) {
+            console.warn(`Fetch for '${cacheKey}' failed, fell back to localStorage cache. Error:`, err?.message || err);
+            return cachedData;
+          }
+          throw err;
         }
-        
-        return data;
       };
 
       const fetchStaticData = async () => {
@@ -179,6 +189,7 @@ export function useFirestoreSync() {
               });
               setter(data as any);
             } catch (err) {
+              setter([]); // Fallback to empty array to prevent state from remains undefined/null which crashes loops
               catchErr(colName)(err);
             }
           };
@@ -195,9 +206,11 @@ export function useFirestoreSync() {
                 }
                 return null;
               });
-              if (data) setter(data);
+              if (data) {
+                setter(data);
+              }
             } catch (err) {
-              handleFirestoreError(err, OperationType.GET, docPath);
+              catchErr(docPath)(err);
             }
           };
 
@@ -214,6 +227,7 @@ export function useFirestoreSync() {
           fetchCol('products', setProducts);
           fetchCol('ads', setAds, query(collection(db, 'ads'), where('active', '==', true), orderBy('order', 'asc')));
           fetchCol('custom_pages', setCustomPages);
+          fetchCol('users', setUsers);
           
         } catch (error) {
           handleFirestoreError(error, OperationType.GET, 'static_data');

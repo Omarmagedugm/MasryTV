@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAppStore } from '../store';
+import { useAppStore, useResolvedMatches } from '../store';
 import { 
   Trophy, 
   MessageCircle, 
@@ -62,7 +62,8 @@ import {
 } from 'firebase/firestore';
 
 export default function FanZone() {
-  const { polls, matches, clubs, profile, fanPosts, predictions, users } = useAppStore();
+  const matches = useResolvedMatches();
+  const { polls, clubs, profile, fanPosts, predictions, users } = useAppStore();
   
   // High-level admin check
   const isOmar = auth.currentUser?.email?.toLowerCase() === 'omarmagedugm@gmail.com' || 
