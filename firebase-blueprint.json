@@ -1,0 +1,308 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "avatar": { "type": "string" },
+        "location": { "type": "string" },
+        "joinDate": { "type": "string" },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "predictions": { "type": "number" },
+            "comments": { "type": "number" },
+            "favorites": { "type": "number" }
+          }
+        }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "News": {
+      "title": "News",
+      "description": "News articles and RSS feeds",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "author": { "type": "string" },
+        "type": { "type": "string", "enum": ["manual", "rss"] },
+        "rssUrl": { "type": "string" }
+      }
+    },
+    "Match": {
+      "title": "Match",
+      "description": "Match score and details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "homeTeam": { "type": "string" },
+        "awayTeam": { "type": "string" },
+        "homeLogo": { "type": "string" },
+        "awayLogo": { "type": "string" },
+        "homeScore": { "type": "string" },
+        "awayScore": { "type": "string" },
+        "date": { "type": "string" },
+        "competition": { "type": "string" },
+        "status": { "type": "string", "enum": ["upcoming", "live", "finished"] },
+        "sport": { "type": "string", "enum": ["football", "basketball"] }
+      }
+    },
+    "CityInfo": {
+      "title": "City Info",
+      "description": "Information about a city (weather, sunset, etc)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "cityName": { "type": "string" },
+        "temperature": { "type": "string" },
+        "condition": { "type": "string" },
+        "sunset": { "type": "string" },
+        "sunrise": { "type": "string" },
+        "description": { "type": "string" },
+        "image": { "type": "string" },
+        "active": { "type": "boolean" }
+      }
+    },
+    "Club": {
+      "title": "Club",
+      "description": "Club name and logo",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "logo": { "type": "string" }
+      }
+    },
+    "Poll": {
+      "title": "Poll",
+      "description": "Fan polls",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "votes": { "type": "object" },
+        "voters": { "type": "array", "items": { "type": "string" } },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Prediction": {
+      "title": "Prediction",
+      "description": "User match prediction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matchId": { "type": "string" },
+        "userId": { "type": "string" },
+        "homeScore": { "type": "number" },
+        "awayScore": { "type": "number" },
+        "userName": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "FanPost": {
+      "title": "Fan Post",
+      "description": "User shared post in fan zone",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "likes": { "type": "number" },
+        "likedBy": { "type": "array", "items": { "type": "string" } },
+        "commentsCount": { "type": "number" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Media": {
+      "title": "Media",
+      "description": "Photos and videos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "url": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "type": { "type": "string", "enum": ["photo", "video"] },
+        "source": { "type": "string", "enum": ["upload", "youtube", "embed"] },
+        "playlistId": { "type": "string" },
+        "duration": { "type": "string" },
+        "views": { "type": "number" },
+        "date": { "type": "string" }
+      }
+    },
+    "MediaPlaylist": {
+      "title": "Media Playlist",
+      "description": "Group of media items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "coverUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "LiveComment": {
+      "title": "Live Comment",
+      "description": "Comments in live chat",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "AppSetting": {
+      "title": "App Setting",
+      "description": "Global application settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "appName": { "type": "string" },
+        "appLogo": { "type": "string" },
+        "logoType": { "type": "string", "enum": ["image", "text"] },
+        "logoText": { "type": "string" },
+        "defaultSport": { "type": "string", "enum": ["auto", "football", "basketball"] }
+      }
+    },
+    "FCMToken": {
+      "title": "FCM Token",
+      "description": "Firebase Cloud Messaging token for push notifications",
+      "type": "object",
+      "properties": {
+        "token": { "type": "string" },
+        "userId": { "type": "string" },
+        "lastSeen": { "type": "string" },
+        "platform": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "isPWA": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["active", "inactive"] }
+      }
+    },
+    "Jerseys": {
+      "title": "Club Jerseys",
+      "description": "Jerseys available for AI transformation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "url"]
+    },
+    "AIConfig": {
+      "title": "AI Feature Configuration",
+      "description": "Settings for the AI jersey try-on feature",
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "clubLogo": { "type": "string" },
+        "bannerTitle": { "type": "string" },
+        "bannerDescription": { "type": "string" },
+        "bannerImage": { "type": "string" },
+        "promptInstructions": { "type": "string" }
+      }
+    },
+    "MatchDayMoment": {
+      "title": "Match Day Moment",
+      "description": "User shared photo and comment specifically for match day",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "matchId": { "type": "string" },
+        "likes": { "type": "number" },
+        "likedBy": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "MatchDayAttendance": {
+      "title": "Match Day Attendance",
+      "description": "Attendance poll for match day",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matchId": { "type": "string" },
+        "votes": { 
+          "type": "object",
+          "properties": {
+            "yes": { "type": "number" },
+            "no": { "type": "number" },
+            "maybe": { "type": "number" }
+          }
+        },
+        "voters": { "type": "object", "description": "Mapping of userId to their choice" }
+      }
+    },
+    "AdBanner": {
+      "title": "Ad Banner",
+      "description": "Advertising space banners",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "image": { "type": "string" },
+        "link": { "type": "string" },
+        "active": { "type": "boolean" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "CustomPage": {
+      "title": "Custom Page",
+      "description": "Custom HTML/Iframe pages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "content": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users": { "schema": "User", "description": "Collection of user profiles" },
+    "news": { "schema": "News", "description": "Collection of news articles" },
+    "matches": { "schema": "Match", "description": "Collection of matches" },
+    "clubs": { "schema": "Club", "description": "Collection of club logos" },
+    "polls": { "schema": "Poll", "description": "Collection of fan polls" },
+    "predictions": { "schema": "Prediction", "description": "Collection of match predictions" },
+    "fan_posts": { "schema": "FanPost", "description": "Community posts" },
+    "media": { "schema": "Media", "description": "Collection of media items" },
+    "media_playlists": { "schema": "MediaPlaylist", "description": "Collection of media playlists" },
+    "live_comments": { "schema": "LiveComment", "description": "Live match comments" },
+    "city_info": { "schema": "CityInfo", "description": "Alexandria city and weather info" },
+    "settings": { "schema": "AppSetting", "description": "Global settings" },
+    "fcm_tokens": { "schema": "FCMToken", "description": "Collection of FCM tokens" },
+    "match_day_moments": { "schema": "MatchDayMoment", "description": "Fan photos for match day" },
+    "match_day_attendance": { "schema": "MatchDayAttendance", "description": "Match day attendance polls" },
+    "ads": { "schema": "AdBanner", "description": "Advertising banners" },
+    "custom_pages": { "schema": "CustomPage", "description": "Custom HTML pages" },
+    "jerseys": { "schema": "Jerseys", "description": "Club jerseys for AI try-on" }
+  }
+}
