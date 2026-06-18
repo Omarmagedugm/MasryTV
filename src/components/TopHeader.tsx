@@ -121,7 +121,7 @@ export default function TopHeader() {
   return (
     <>
       <div style={{ height: 'calc(env(safe-area-inset-top) + 68px)' }} className="w-full"></div>
-      <header id="global-header" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }} className="fixed top-0 inset-x-0 w-full max-w-md mx-auto z-50 bg-white/90 dark:bg-[#020703]/90 backdrop-blur-3xl border-b border-slate-200/50 dark:border-white/5 px-4 pb-4 shadow-premium">
+      <header id="global-header" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }} className="fixed top-0 inset-x-0 w-full max-w-md mx-auto z-50 bg-primary-dark backdrop-blur-3xl border-b border-white/10 px-4 pb-4 shadow-premium">
         <div className="flex items-center justify-between max-w-md mx-auto h-16">
           <div className="flex items-center gap-3">
             {isHome ? (
@@ -130,7 +130,7 @@ export default function TopHeader() {
                 whileTap={{ scale: 0.9 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => setIsMenuOpen(true)}
-                className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white dark:bg-white/5 text-slate-800 dark:text-white hover:bg-primary hover:text-white transition-all duration-500 shadow-premium border border-slate-100 dark:border-white/5"
+                className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/10 hover:bg-white/20 text-white transition-all duration-500 shadow-sm border border-white/10"
               >
                 <Menu size={22} strokeWidth={2.5} />
               </motion.button>
@@ -140,7 +140,7 @@ export default function TopHeader() {
                 whileTap={{ scale: 0.9 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => navigate(-1)}
-                className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white dark:bg-white/5 text-slate-800 dark:text-white hover:bg-primary hover:text-white transition-all duration-500 shadow-premium border border-slate-100 dark:border-white/5"
+                className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/10 hover:bg-white/20 text-white transition-all duration-500 shadow-sm border border-white/10"
               >
                 <ChevronRight size={28} strokeWidth={2.5} className="rotate-180" />
               </motion.button>
@@ -155,17 +155,17 @@ export default function TopHeader() {
                 transition={{ duration: 0.5 }}
                 className="relative"
               >
-                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <img 
                   src={currentLogo} 
                   alt={title} 
-                  className="h-10 sm:h-12 w-auto max-w-[140px] object-contain drop-shadow-2xl hover:scale-110 transition-all duration-700 relative z-10" 
+                  className="h-10 sm:h-12 w-auto max-w-[140px] object-contain drop-shadow-2xl hover:scale-110 transition-all duration-700 relative z-10 filter brightness-0 invert" 
                   referrerPolicy="no-referrer"
                   onError={() => setImageError(true)}
                 />
               </motion.div>
             ) : (
-              <h1 className="text-xs min-[360px]:text-sm min-[400px]:text-base sm:text-lg font-black tracking-normal text-slate-800 dark:text-white text-center whitespace-nowrap overflow-hidden text-ellipsis w-full font-sans">
+              <h1 className="text-[11px] min-[360px]:text-[13px] min-[400px]:text-[15px] font-black tracking-tight text-white text-center leading-tight max-w-[160px] min-[360px]:max-w-[200px] break-words mx-auto font-sans">
                 {appSettings?.logoText || title}
               </h1>
             )}
@@ -177,11 +177,11 @@ export default function TopHeader() {
               whileTap={{ scale: 0.9 }}
               whileHover={{ scale: 1.05 }}
               onClick={handleOpenNotifications}
-              className="relative flex h-12 w-12 items-center justify-center rounded-[20px] bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-accent hover:text-white transition-all duration-500 shadow-premium border border-slate-100 dark:border-white/5"
+              className="relative flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/10 hover:bg-white/20 text-white transition-all duration-500 shadow-sm border border-white/10"
             >
               <Bell size={20} strokeWidth={2.5} />
               {unreadCount > 0 && (
-                <span className="absolute top-3.5 right-3.5 h-3 w-3 bg-accent rounded-full ring-2 ring-white dark:ring-slate-900 shadow-glow animate-pulse"></span>
+                <span className="absolute top-3.5 right-3.5 h-3 w-3 bg-accent rounded-full ring-2 ring-primary shadow-glow animate-pulse"></span>
               )}
             </motion.button>
 
@@ -190,7 +190,7 @@ export default function TopHeader() {
               whileTap={{ scale: 0.9 }}
               whileHover={{ scale: 1.05 }}
               onClick={toggleTheme}
-              className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-primary hover:text-white transition-all duration-500 shadow-premium border border-slate-100 dark:border-white/5"
+              className="flex h-12 w-12 items-center justify-center rounded-[20px] bg-white/10 hover:bg-white/20 text-white transition-all duration-500 shadow-sm border border-white/10"
             >
               {theme === 'dark' ? <Sun size={20} strokeWidth={2.5} /> : <Moon size={20} strokeWidth={2.5} />}
             </motion.button>

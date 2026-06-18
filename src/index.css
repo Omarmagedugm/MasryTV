@@ -11,15 +11,15 @@
   --color-accent-hover: #C99E3F;
   
   --color-background-light: #FAF9F6; /* Luxury Warm Off-White */
-  --color-background-dark: #020703; /* Deep Emerald Obsidian Slate */
+  --color-background-dark: #07150E; /* Deep Emerald Forest Black */
   
-  --color-surface-dark: #060E07;
+  --color-surface-dark: #0B1E15;
   --color-surface-light: #FFFFFF;
   
-  --color-card-dark: #09130A;
+  --color-card-dark: #122B1E;
   --color-card-light: #FFFFFF;
   
-  --color-border-dark: #142717;
+  --color-border-dark: #1C3C2C;
   --color-border-light: #EBF1EA;
   
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;

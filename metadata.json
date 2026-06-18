@@ -2,5 +2,5 @@
   "name": "قناة المصري البورسعيدي",
   "description": "التطبيق الرسمي لجماهير النادي المصري البورسعيدي - أخبار، مباريات، وبث مباشر",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

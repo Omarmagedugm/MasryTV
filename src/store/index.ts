@@ -675,9 +675,22 @@ export const useAppStore = create<AppState>()(
     {
       name: 'masry-app-storage',
       partialize: (state) => {
-        const { isAuthReady, ...rest } = state;
-        localStorage.setItem('masry-app-storage', JSON.stringify(rest));
-        return rest;
+        const {
+          news, media, matches, clubs, polls, predictions, fanPosts, users,
+          appSettings, liveStream, theme, profile, clubTitles, clubStats,
+          historyEvents, stadiums, newsCategories, newsTags, products, orders,
+          ads, customPages, homeSections, songs, albums, playlists,
+          mediaPlaylists, books, cityInfo, currentSong, isPlaying, playerVolume,
+          stadiumOpacity, activePlaylist
+        } = state;
+        return {
+          news, media, matches, clubs, polls, predictions, fanPosts, users,
+          appSettings, liveStream, theme, profile, clubTitles, clubStats,
+          historyEvents, stadiums, newsCategories, newsTags, products, orders,
+          ads, customPages, homeSections, songs, albums, playlists,
+          mediaPlaylists, books, cityInfo, currentSong, isPlaying, playerVolume,
+          stadiumOpacity, activePlaylist
+        };
       },
     }
   )

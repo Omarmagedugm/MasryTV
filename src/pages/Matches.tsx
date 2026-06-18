@@ -184,27 +184,6 @@ export default function Matches() {
 
   return (
     <div className="flex-1 w-full max-w-md mx-auto flex flex-col pb-32 px-0 bg-background-light dark:bg-background-dark min-h-screen">
-      <div className="sticky top-[65px] z-30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-xl px-4 py-2 border-b border-border-light/40 dark:border-border-dark/40 flex flex-col gap-2">
-        <div className="flex gap-2 p-1 bg-slate-100 dark:bg-surface-dark rounded-2xl">
-          {[
-            { id: 'all', label: 'الكل' },
-            { id: 'football', label: 'كرة القدم' }
-          ].map((tab) => (
-            <button 
-              key={tab.id}
-              onClick={() => setSelectedSport(tab.id as any)}
-              className={`flex-1 py-1.5 rounded-xl text-[10px] font-black transition-all duration-300 ${
-                selectedSport === tab.id 
-                  ? 'bg-white dark:bg-primary text-primary-dark dark:text-white shadow-premium' 
-                  : 'text-slate-500 hover:text-primary-dark dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <motion.main 
         key={selectedSport}
         variants={containerVariants}
@@ -273,7 +252,7 @@ export default function Matches() {
 
                         <div className="flex justify-center items-center gap-4 sm:gap-8 my-2">
                           <div className="flex flex-col items-center gap-2 sm:gap-4 w-20 sm:w-32">
-                            <div className="w-18 h-18 sm:w-24 sm:h-24 bg-white/10 backdrop-blur-xl rounded-[24px] sm:rounded-[32px] p-2.5 sm:p-4 flex items-center justify-center ring-1 ring-white/20 shadow-premium animate-float">
+                            <div className="w-18 h-18 sm:w-24 sm:h-24 flex items-center justify-center animate-float">
                               <img src={getOptimizedImage(section.newestMatch.homeLogo, 200) || undefined} alt={section.newestMatch.homeTeam} referrerPolicy="no-referrer" className="w-full h-full object-contain filter drop-shadow-2xl" />
                             </div>
                             <span className="text-white font-black text-[9px] sm:text-[10px] text-center uppercase tracking-widest line-clamp-2">{section.newestMatch.homeTeam}</span>
@@ -307,7 +286,7 @@ export default function Matches() {
                           </div>
 
                           <div className="flex flex-col items-center gap-2 sm:gap-4 w-20 sm:w-32">
-                            <div className="w-18 h-18 sm:w-24 sm:h-24 bg-white/10 backdrop-blur-xl rounded-[24px] sm:rounded-[32px] p-2.5 sm:p-4 flex items-center justify-center ring-1 ring-white/20 shadow-premium animate-float [animation-delay:0.5s]">
+                            <div className="w-18 h-18 sm:w-24 sm:h-24 flex items-center justify-center animate-float [animation-delay:0.5s]">
                               <img src={getOptimizedImage(section.newestMatch.awayLogo, 200) || undefined} alt={section.newestMatch.awayTeam} referrerPolicy="no-referrer" className="w-full h-full object-contain filter drop-shadow-2xl" />
                             </div>
                             <span className="text-white font-black text-[9px] sm:text-[10px] text-center uppercase tracking-widest line-clamp-2">{section.newestMatch.awayTeam}</span>
@@ -388,7 +367,7 @@ export default function Matches() {
 
                       <div className="flex justify-center items-center gap-6 sm:gap-10">
                         <div className="flex flex-col items-center gap-3 sm:gap-4 w-24 sm:w-32 group/team">
-                          <div className="w-18 h-18 sm:w-24 sm:h-24 bg-slate-50 dark:bg-background-dark rounded-3xl p-3 sm:p-4 shadow-inner ring-1 ring-slate-100 dark:ring-white/10 flex items-center justify-center transition-all duration-500 group-hover/team:scale-105 group-hover/team:shadow-lg">
+                          <div className="w-18 h-18 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-500 group-hover/team:scale-110">
                             <img src={getOptimizedImage(match.homeLogo, 150) || undefined} alt={match.homeTeam} referrerPolicy="no-referrer" className="w-full h-full object-contain filter drop-shadow-md" />
                           </div>
                           <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-white uppercase text-center line-clamp-1 transition-colors group-hover/team:text-primary">{match.homeTeam}</span>
@@ -417,7 +396,7 @@ export default function Matches() {
                         </div>
 
                         <div className="flex flex-col items-center gap-3 sm:gap-4 w-24 sm:w-32 group/team">
-                          <div className="w-18 h-18 sm:w-24 sm:h-24 bg-slate-50 dark:bg-background-dark rounded-3xl p-3 sm:p-4 shadow-inner ring-1 ring-slate-100 dark:ring-white/10 flex items-center justify-center transition-all duration-500 group-hover/team:scale-105 group-hover/team:shadow-lg [animation-delay:0.5s]">
+                          <div className="w-18 h-18 sm:w-24 sm:h-24 flex items-center justify-center transition-all duration-500 group-hover/team:scale-110 [animation-delay:0.5s]">
                             <img src={getOptimizedImage(match.awayLogo, 150) || undefined} alt={match.awayTeam} referrerPolicy="no-referrer" className="w-full h-full object-contain filter drop-shadow-md" />
                           </div>
                           <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-white uppercase text-center line-clamp-1 transition-colors group-hover/team:text-primary">{match.awayTeam}</span>
@@ -574,7 +553,7 @@ export default function Matches() {
                   
                   return (
                     <div className="flex flex-col gap-8">
-                      {isBasketball ? (
+                      {false ? (
                         <div className="flex flex-col gap-6">
                            <div className="text-center font-black text-[10px] text-slate-400 uppercase tracking-widest">اختر الفريق الفائز</div>
                            <div className="flex gap-4">
@@ -719,7 +698,7 @@ export default function Matches() {
                           </div>
                           
                           <div className="flex items-center gap-2">
-                             {isBasketball ? (
+                             {false ? (
                                <div className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase shadow-sm ${isCorrect ? 'bg-green-500 text-white' : 'bg-primary text-white'}`}>
                                  فوز {pred.homeScore > pred.awayScore ? match?.homeTeam : match?.awayTeam}
                                </div>

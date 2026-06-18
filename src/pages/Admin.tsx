@@ -3413,19 +3413,10 @@ export default function Admin() {
                      >
                        كرة القدم دائماً
                      </button>
-                     <button 
-                       onClick={() => setFormData({...formData, defaultSport: 'basketball'})}
-                       className={`py-3 px-2 rounded-xl border text-[10px] font-black transition-all ${
-                         (formData.defaultSport || appSettings.defaultSport) === 'basketball' 
-                           ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-[1.02]' 
-                           : 'bg-slate-50 dark:bg-surface-dark border-border-light dark:border-border-dark text-slate-500'
-                       }`}
-                     >
-                       كرة السلة دائماً
-                     </button>
+                     
                    </div>
                    <p className="text-[9px] text-slate-400 font-bold italic leading-relaxed">
-                     * ملاحظة: الخيار الافتراضي هو "تلقائي" حيث يقوم النظام بإظهار مباريات كرة القدم أو السلة حسب وجود مباريات جارية أو تم تمييزها. اختيار رياضة محددة سيلغي هذا السلوك وسيظهر الرياضة المختارة دائماً عند الفتح.
+                     * ملاحظة: الخيار الافتراضي هو "تلقائي" حيث يقوم النظام بإظهار مباريات كرة القدم حسب وجود مباريات جارية أو تم تمييزها. اختيار رياضة محددة سيلغي هذا السلوك وسيظهر الرياضة المختارة دائماً عند الفتح.
                    </p>
                  </div>
                </div>
@@ -3966,7 +3957,7 @@ export default function Admin() {
                           <label className="text-[10px] font-black text-slate-500 mb-1 block">التصنيف</label>
                           <select className="w-full p-3 rounded-xl border border-border-light bg-slate-50 dark:bg-surface-dark dark:border-border-dark text-sm" value={formData.category || 'football'} onChange={(e) => setFormData({...formData, category: e.target.value})}>
                             <option value="football">كرة قدم</option>
-                            <option value="basketball">كرة سلة</option>
+                            
                           </select>
                         </div>
                      </>
@@ -4457,7 +4448,7 @@ export default function Admin() {
                         <label className="text-[10px] font-black text-slate-500 mb-1 block">الرياضة</label>
                         <select className="w-full p-3 rounded-xl border border-border-light bg-slate-50 dark:bg-surface-dark dark:border-border-dark text-slate-800 dark:text-white text-sm font-bold" value={formData.sport || 'football'} onChange={(e) => setFormData({...formData, sport: e.target.value})}>
                            <option value="football">كرة قدم</option>
-                           <option value="basketball">كرة سلة</option>
+                           
                         </select>
                       </div>
                       <div className="opacity-0 pointer-events-none">Placeholder</div>
@@ -4561,13 +4552,7 @@ export default function Admin() {
                             value={formData.homeScore ?? ''} 
                             onChange={(e) => setFormData({...formData, homeScore: e.target.value})} 
                           />
-                          {formData.sport === 'basketball' && (
-                            <div className="flex gap-1">
-                              {[1, 2, 3].map(n => (
-                                <button key={n} type="button" onClick={() => setFormData({...formData, homeScore: String(parseInt(formData.homeScore || '0') + n)})} className="flex-1 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold">+{n}</button>
-                              ))}
-                            </div>
-                          )}
+                          
                         </div>
                       </div>
                       <div>
@@ -4580,13 +4565,7 @@ export default function Admin() {
                             value={formData.awayScore ?? ''} 
                             onChange={(e) => setFormData({...formData, awayScore: e.target.value})} 
                           />
-                          {formData.sport === 'basketball' && (
-                            <div className="flex gap-1">
-                              {[1, 2, 3].map(n => (
-                                <button key={n} type="button" onClick={() => setFormData({...formData, awayScore: String(parseInt(formData.awayScore || '0') + n)})} className="flex-1 py-1 bg-orange-500/10 text-orange-600 rounded-lg text-[10px] font-bold">+{n}</button>
-                              ))}
-                            </div>
-                          )}
+                          
                         </div>
                       </div>
                     </div>

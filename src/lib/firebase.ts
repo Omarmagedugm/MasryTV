@@ -58,15 +58,15 @@ export function handleFirestoreError(error: any, operationType: OperationType, p
   const isUnavailable = errCode === 'unavailable' || errCode === 'deadline-exceeded' || errStr.includes('offline');
   const isQuotaExceeded = errCode === 'resource-exhausted' || errStr.toLowerCase().includes('quota');
 
+  if (isRead && (isUnavailable || isQuotaExceeded)) {
+    console.warn(`Firestore [${path}] temporarily unavailable. Operating in offline/quota-exceeded mode.`, errInfo);
+    return;
+  }
+
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('firestore-error', { 
       detail: { code: errCode, message: errStr, path, operationType } 
     }));
-  }
-
-  if (isRead && (isUnavailable || isQuotaExceeded)) {
-    console.warn(`Firestore [${path}] temporarily unavailable. Operating in offline/quota-exceeded mode.`, errInfo);
-    return;
   }
 
   console.error(`Firestore Error [${path}]: `, JSON.stringify(errInfo));

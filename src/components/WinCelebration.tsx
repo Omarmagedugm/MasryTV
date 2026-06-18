@@ -137,7 +137,7 @@ export default function WinCelebration({ show, onComplete, match }: WinCelebrati
 
                   <div className="mt-6 pt-4 border-t border-white/10 w-full text-center">
                     <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
-                      {match.sport === 'basketball' ? 'كرة السلة' : 'كرة القـدم'}
+                      {'كرة القـدم'}
                     </span>
                   </div>
                 </div>

@@ -241,28 +241,7 @@ export default function Home() {
     }
   };
 
-  // Auto-start timer logic: if an upcoming match's time has passed, and we are admin, we can auto-start or prompt.
-  // The user asked for "start automatically".
-  useEffect(() => {
-    if (!isAdmin) return;
-    
-    const checkUpcoming = () => {
-      const now = new Date();
-      matches.forEach(m => {
-        if (m.status === 'upcoming' && m.date) {
-          const matchDate = new Date(m.date);
-          if (now >= matchDate) {
-            // Auto-trigger live status
-            handleStatusUpdate(m.id, 'live');
-          }
-        }
-      });
-    };
 
-    const interval = setInterval(checkUpcoming, 30000); // Check every 30s
-    checkUpcoming(); // Initial check
-    return () => clearInterval(interval);
-  }, [matches, isAdmin]);
 
   const recentNews = news.slice(0, 5);
   const recentMedia = media.slice(0, 5);
@@ -628,10 +607,10 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-black text-slate-800 dark:text-white line-clamp-2 leading-tight min-h-[56px] group-hover:text-primary transition-colors">
+                      <h3 className="text-lg font-black text-slate-800 dark:text-white line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                         {item.title}
                       </h3>
-                      <div className="mt-4 flex items-center justify-between border-t border-slate-50 dark:border-white/5 pt-4">
+                      <div className="mt-3 flex items-center justify-between border-t border-slate-50 dark:border-white/5 pt-3">
                         <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
                           <span className="material-symbols-outlined !text-[18px] text-primary">calendar_today</span>
                           {item.date ? format(new Date(item.date), "d MMM yyyy", { locale: ar }) : "اليوم"}
@@ -737,11 +716,11 @@ export default function Home() {
                     
                     <div className="flex items-center gap-4 sm:gap-6 relative z-10 flex-1 min-w-0">
                       <div className="flex items-center -space-x-4 rtl:space-x-reverse shrink-0">
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-slate-50 dark:bg-background-dark p-2 shadow-md ring-1 ring-slate-100 dark:ring-white/10 flex items-center justify-center z-10 transition-all group-hover:scale-110">
-                          <img src={match.homeLogo || undefined} alt="Home" className="h-full w-full object-contain" referrerPolicy="no-referrer" />
+                        <div className="h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center z-10 transition-all group-hover:scale-110">
+                          <img src={match.homeLogo || undefined} alt="Home" className="h-full w-full object-contain filter drop-shadow-md" referrerPolicy="no-referrer" />
                         </div>
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-slate-50 dark:bg-background-dark p-2 shadow-md ring-1 ring-slate-100 dark:ring-white/10 flex items-center justify-center z-0 scale-90 opacity-40 blur-[1px] transition-all group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 translate-x-2">
-                          <img src={match.awayLogo || undefined} alt="Away" className="h-full w-full object-contain" referrerPolicy="no-referrer" />
+                        <div className="h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center z-0 scale-90 opacity-40 blur-[1px] transition-all group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 translate-x-2">
+                          <img src={match.awayLogo || undefined} alt="Away" className="h-full w-full object-contain filter drop-shadow-md" referrerPolicy="no-referrer" />
                         </div>
                       </div>
                       
@@ -1638,7 +1617,7 @@ export default function Home() {
           return (
             <div
               key={section.id}
-              style={{ marginBottom: `${section.spacing ?? 48}px` }}
+              style={{ marginBottom: `${section.spacing ?? 28}px` }}
             >
               {content}
             </div>

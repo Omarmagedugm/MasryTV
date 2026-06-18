@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy, doc, limit, updateDoc, where, getDocs, getDoc } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { useAppStore } from '../store';
@@ -10,8 +10,6 @@ export function useFirestoreSync() {
     setNewsCategories, setNewsTags, setHomeSections, setProducts, setSongs, setAlbums, setPlaylists, setMediaPlaylists, setBooks,
     setClubStats, setClubTitles, setHistoryEvents, setStadiums
   } = useAppStore();
-
-  const isFetchedRef = useRef(false);
 
   useEffect(() => {
     // Sync Current User Profile first (Real-time)
@@ -135,107 +133,109 @@ export function useFirestoreSync() {
       }, 1000); // slight delay to allow profile load
     }
 
-    // One-time Fetch for Static/Infrequent Data
-    if (!isFetchedRef.current) {
-      isFetchedRef.current = true;
+    // One-time Fetch for Static/Infrequent Data with Stale-While-Revalidate
+    const fetchWithCache = async (cacheKey: string, setter: (data: any) => void, fetcher: () => Promise<any>) => {
+      let cachedData: any = null;
+      let hasCache = false;
+      
+      // 1. Instantly load from cache to keep UI responsive and prevent data loss
+      try {
+        const cached = localStorage.getItem(`fs_cache_${cacheKey}`);
+        if (cached) {
+          const { data } = JSON.parse(cached);
+          cachedData = data;
+          hasCache = true;
+          setter(data);
+        }
+      } catch (e) { /* ignore */ }
 
-      const fetchWithCache = async (cacheKey: string, fetcher: () => Promise<any>, ttlHours = 24) => {
-        const isAdmin = useAppStore.getState().profile?.role === 'admin';
-        let cachedData: any = null;
-        let hasCache = false;
-        
-        // Always try to load from cache first for immediate UI updates
+      // 2. Fetch fresh data to avoid showing old out-dated content
+      try {
+        const data = await fetcher();
         try {
-          const cached = localStorage.getItem(`fs_cache_${cacheKey}`);
-          if (cached) {
-            const { data, timestamp } = JSON.parse(cached);
-            cachedData = data;
-            hasCache = true;
-            // Return cached data immediately if not admin (admins need fresh data) and not expired
-            if (!isAdmin && Date.now() - timestamp < ttlHours * 60 * 60 * 1000) {
-              return data;
-            }
-          }
-        } catch (e) { /* ignore */ }
-
-        try {
-          const data = await fetcher();
-          try {
-            localStorage.setItem(`fs_cache_${cacheKey}`, JSON.stringify({ data, timestamp: Date.now() }));
-          } catch (e) {
-            // ignore cache save errors
-          }
-          return data;
-        } catch (err: any) {
-          // If fetch fails but we have cached data (even if expired or admin), fallback gracefully!
-          if (hasCache) {
-            console.warn(`Fetch for '${cacheKey}' failed, fell back to localStorage cache. Error:`, err?.message || err);
-            return cachedData;
-          }
+          localStorage.setItem(`fs_cache_${cacheKey}`, JSON.stringify({ data, timestamp: Date.now() }));
+        } catch (e) { /* ignore cache write error */ }
+        setter(data);
+        return data;
+      } catch (err: any) {
+        console.warn(`Fetch for '${cacheKey}' failed. Error:`, err?.message || err);
+        if (!hasCache) {
           throw err;
         }
-      };
+        return cachedData;
+      }
+    };
 
-      const fetchStaticData = async () => {
-        try {
-          const catchErr = (path: string) => (err: any) => handleFirestoreError(err, OperationType.GET, path);
-          
-          // Helper for fetching collections
-          const fetchCol = async (colName: string, setter: (data: any) => void, q?: any) => {
-            try {
-              const data = await fetchWithCache(colName, async () => {
-                const snap = await getDocs(q || collection(db, colName));
-                return snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
-              });
-              setter(data as any);
-            } catch (err) {
-              setter([]); // Fallback to empty array to prevent state from remains undefined/null which crashes loops
-              catchErr(colName)(err);
-            }
-          };
+    const fetchStaticData = async () => {
+      try {
+        const catchErr = (path: string) => (err: any) => handleFirestoreError(err, OperationType.GET, path);
+        
+        // Helper for fetching collections
+        const fetchCol = async (colName: string, setter: (data: any) => void, q?: any) => {
+          try {
+            await fetchWithCache(colName, setter, async () => {
+              const snap = await getDocs(q || collection(db, colName));
+              return snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+            });
+          } catch (err) {
+            setter([]); // Fallback to empty array to prevent state from remaining undefined
+            catchErr(colName)(err);
+          }
+        };
 
-          // Helper for fetching docs
-          const fetchDoc = async (docPath: string, setter: (data: any) => void, mapFn?: (data: any) => any) => {
-            try {
-              const data = await fetchWithCache(docPath.replace('/', '_'), async () => {
-                const paths = docPath.split('/');
-                const snap = await getDoc(doc(db, paths[0], paths[1]));
-                if (snap.exists()) {
-                  const docData = { id: snap.id, ...snap.data() };
-                  return mapFn ? mapFn(docData) : docData;
-                }
-                return null;
-              });
-              if (data) {
-                setter(data);
+        // Helper for fetching docs
+        const fetchDoc = async (docPath: string, setter: (data: any) => void, mapFn?: (data: any) => any) => {
+          try {
+            await fetchWithCache(docPath.replace('/', '_'), (data) => {
+              if (data) setter(data);
+            }, async () => {
+              const paths = docPath.split('/');
+              const snap = await getDoc(doc(db, paths[0], paths[1]));
+              if (snap.exists()) {
+                const docData = { id: snap.id, ...snap.data() };
+                return mapFn ? mapFn(docData) : docData;
               }
-            } catch (err) {
-              catchErr(docPath)(err);
-            }
-          };
+              return null;
+            });
+          } catch (err) {
+            catchErr(docPath)(err);
+          }
+        };
 
-          // Settings (No longer real-time to save quota)
-          fetchDoc('settings/global', setSettings);
-          fetchDoc('settings/newsCategories', d => setNewsCategories(d.list || []));
-          fetchDoc('settings/newsTags', d => setNewsTags(d.tags || []));
-          fetchDoc('city_info/portsaid', setCityInfo);
-          
-          // Content
-          fetchCol('clubs', setClubs);
-          fetchCol('polls', setPolls);
-          fetchCol('predictions', setPredictions);
-          fetchCol('products', setProducts);
-          fetchCol('ads', setAds, query(collection(db, 'ads'), where('active', '==', true), orderBy('order', 'asc')));
-          fetchCol('custom_pages', setCustomPages);
+        // Settings (stale-while-revalidate means we read cache instantly, and sync live)
+        fetchDoc('settings/global', setSettings);
+        fetchDoc('settings/newsCategories', d => setNewsCategories(d.list || []));
+        fetchDoc('settings/newsTags', d => setNewsTags(d.tags || []));
+        fetchDoc('city_info/portsaid', setCityInfo);
+        
+        // Content
+        fetchCol('clubs', setClubs);
+        fetchCol('polls', setPolls);
+        fetchCol('predictions', setPredictions);
+        fetchCol('products', setProducts);
+        fetchCol('ads', setAds, query(collection(db, 'ads'), where('active', '==', true), orderBy('order', 'asc')));
+        fetchCol('custom_pages', setCustomPages);
+        const profile = useAppStore.getState().profile;
+        const email = auth.currentUser?.email?.toLowerCase();
+        const isAdminOrManager = (profile?.role === 'admin') || 
+                                 (profile?.roles && (profile.roles.includes('admin') || profile.roles.includes('user_manager'))) ||
+                                 email === 'copyrightofficialco@gmail.com' || 
+                                 email === 'omarmagedugm@gmail.com' ||
+                                 email === 'itthadalexchannel2@gmail.com' ||
+                                 email === 'itthadalexchannel2@masry.club' ||
+                                 email?.startsWith('itthadalexchannel2@') ||
+                                 profile?.username?.toLowerCase() === 'itthadalexchannel2';
+
+        if (isAdminOrManager) {
           fetchCol('users', setUsers);
-          
-        } catch (error) {
-          handleFirestoreError(error, OperationType.GET, 'static_data');
         }
-      };
+        
+      } catch (error) {
+        handleFirestoreError(error, OperationType.GET, 'static_data');
+      }
+    };
 
-      fetchStaticData();
-    }
+    fetchStaticData();
 
     return () => {
       unsubProfile();

@@ -109,55 +109,7 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
-    const seedRequestedMatches = async () => {
-      const isSeeded = localStorage.getItem('user_requested_matches_seeded_v2');
-      if (isSeeded) return;
 
-      try {
-        const { collection, addDoc, getDocs, query, where } = await import('firebase/firestore');
-        const { db } = await import('./lib/firebase');
-        
-        const requestedMatches = [
-          { date: "2026-05-20", homeTeam: "المصري", awayTeam: "الأهلي", homeScore: "-", awayScore: "-", status: "upcoming", stadium: "ستاد برج العرب", time: "20:00" },
-          { date: "2026-05-01", homeTeam: "سيراميكا كليوباترا", awayTeam: "المصري", homeScore: "0", awayScore: "1", status: "finished" },
-          { date: "2026-03-10", homeTeam: "المصري", awayTeam: "الجونة", homeScore: "1", awayScore: "0", status: "finished" },
-          { date: "2026-03-01", homeTeam: "إنبي", awayTeam: "المصري", homeScore: "2", awayScore: "3", status: "finished" },
-          { date: "2026-02-25", homeTeam: "المصري", awayTeam: "مودرن سبورت", homeScore: "0", awayScore: "1", status: "finished" },
-          { date: "2026-02-19", homeTeam: "المقاولون العرب", awayTeam: "المصري", homeScore: "1", awayScore: "1", status: "finished" },
-        ];
-
-        for (const m of requestedMatches) {
-          const q = query(
-            collection(db, 'matches'), 
-            where('homeTeam', '==', m.homeTeam), 
-            where('awayTeam', '==', m.awayTeam), 
-            where('date', '==', m.date)
-          );
-          const snap = await getDocs(q);
-          if (snap.empty) {
-            await addDoc(collection(db, 'matches'), {
-              ...m,
-              homeLogo: (m.homeTeam === 'المصري' || m.homeTeam.includes('المصري')) ? 'https://res.cloudinary.com/dqj6gzwfg/image/upload/v1777720049/admin_homeLogo/bsxn6a8jxy6yfbyh56df.png' : 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e4/Al_Ahly_SC_logo.png/150px-Al_Ahly_SC_logo.png',
-              awayLogo: (m.awayTeam === 'المصري' || m.awayTeam.includes('المصري')) ? 'https://res.cloudinary.com/dqj6gzwfg/image/upload/v1777720049/admin_homeLogo/bsxn6a8jxy6yfbyh56df.png' : 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e4/Al_Ahly_SC_logo.png/150px-Al_Ahly_SC_logo.png',
-              competition: 'الدوري المصري',
-              time: m.time || "20:00",
-              stadium: m.stadium || 'إستاد برج العرب',
-              channel: 'OnTime Sports',
-              isMatchDay: false,
-              createdAt: new Date().toISOString(),
-              sport: 'football'
-            });
-          }
-        }
-        localStorage.setItem('user_requested_matches_seeded_v2', 'true');
-      } catch (err) {
-        console.error("Auto Seeder Error:", err);
-      }
-    };
-    
-    seedRequestedMatches();
-  }, []);
 
   const theme = useAppStore(state => state.theme);
   const setIsAuthReady = useAppStore(state => state.setIsAuthReady);
