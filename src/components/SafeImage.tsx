@@ -11,7 +11,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
   alt, 
   className, 
   width, 
-  fallback = 'https://res.cloudinary.com/dqj6gzwfg/image/upload/v1777716805/favicon_gd0ic4.png',
+  fallback = '/icon.png',
   ...props 
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);

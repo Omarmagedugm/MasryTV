@@ -10,7 +10,6 @@ import Auth from './pages/Auth';
 import Home from './pages/Home';
 import News from './pages/News';
 import NewsDetail from './pages/NewsDetail';
-import Media from './pages/Media';
 import Live from './pages/Live';
 import Matches from './pages/Matches';
 import Profile from './pages/Profile';
@@ -194,7 +193,7 @@ export default function App() {
           <Route path="/feed" element={<FanZone />} />
           <Route path="/news" element={<News />} />
           <Route path="/news/:id" element={<NewsDetail />} />
-          <Route path="/media" element={<Media />} />
+          <Route path="/media" element={<Navigate to="/library" replace />} />
           <Route path="/live" element={<Live />} />
           <Route path="/matches" element={<Matches />} />
           <Route path="/profile" element={<Profile />} />

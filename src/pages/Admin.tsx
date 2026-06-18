@@ -3375,7 +3375,7 @@ export default function Admin() {
                 <div className="mt-4 p-6 bg-slate-50 dark:bg-surface-dark rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-border-dark min-h-[120px]">
                    {(formData.logoType || appSettings.logoType || 'image') === 'image' ? (
                      (formData.appLogo || appSettings.appLogo) && (
-                       <img src={formData.appLogo ?? appSettings.appLogo} onError={(e) => { e.currentTarget.src = 'https://res.cloudinary.com/dqj6gzwfg/image/upload/v1777716805/favicon_gd0ic4.png'; }} className="h-20 object-contain drop-shadow-lg mb-2" referrerPolicy="no-referrer" />
+                       <img src={formData.appLogo ?? appSettings.appLogo} onError={(e) => { e.currentTarget.src = '/icon.png'; }} className="h-20 object-contain drop-shadow-lg mb-2" referrerPolicy="no-referrer" />
                      )
                    ) : (
                      <h1 className="text-3xl font-black text-primary-dark dark:text-white drop-shadow-md mb-2">

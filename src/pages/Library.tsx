@@ -29,6 +29,7 @@ import toast from 'react-hot-toast';
 import { useAppStore } from '../store';
 import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
+import { getOptimizedImage } from '../lib/cloudinary';
 
 export default function Library() {
   const { 
@@ -40,6 +41,7 @@ export default function Library() {
     setAlbums, 
     media,
     setMedia,
+    mediaPlaylists = [],
     currentSong, 
     setCurrentSong, 
     setIsPlaying, 
@@ -53,7 +55,28 @@ export default function Library() {
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const [filterType, setFilterType] = useState<string>('all');
   const [mediaTypeFilter, setMediaTypeFilter] = useState<'all' | 'photo' | 'video'>('all');
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
   const [isLiking, setIsLiking] = useState<string | null>(null);
+
+  const getEmbedUrl = (url: string, source?: string) => {
+    if (source === 'embed') return url;
+    if (url.includes('youtube.com/watch?v=')) {
+      const id = url.split('v=')[1]?.split('&')[0];
+      return `https://www.youtube.com/embed/${id}?autoplay=1`;
+    } else if (url.includes('youtu.be/')) {
+      const id = url.split('youtu.be/')[1]?.split('?')[0];
+      return `https://www.youtube.com/embed/${id}?autoplay=1`;
+    } else if (url.includes('youtube.com/embed/')) {
+      return url.includes('?') ? `${url}&autoplay=1` : `${url}?autoplay=1`;
+    } else if (url.includes('facebook.com/')) {
+      return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&autoplay=1`;
+    }
+    return null;
+  };
+
+  const isEmbeddable = (url: string) => {
+    return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('facebook.com');
+  };
 
   const handleDownload = (url: string, filename: string) => {
     const link = document.createElement('a');
@@ -122,7 +145,8 @@ export default function Library() {
 
   const filteredMedia = media.filter(m => 
     m.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (mediaTypeFilter === 'all' || m.type === mediaTypeFilter)
+    (mediaTypeFilter === 'all' || m.type === mediaTypeFilter) &&
+    (!selectedPlaylistId || m.playlistId === selectedPlaylistId)
   );
 
   const handlePlaySong = (song: any) => {
@@ -241,82 +265,124 @@ export default function Library() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col gap-12"
+                className="flex flex-col gap-10"
               >
+                {/* Playlists Curved Horizontal Slider */}
+                {mediaPlaylists.length > 0 && (
+                  <section className="space-y-4">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex flex-col">
+                        <h3 className="text-lg font-black text-slate-800 dark:text-white leading-none">مجموعات الميديا المميزة</h3>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest mt-1">Curated Media Collections</span>
+                      </div>
+                      {selectedPlaylistId && (
+                        <button 
+                          onClick={() => setSelectedPlaylistId(null)}
+                          className="text-xs font-black text-primary px-3 py-1 bg-primary/10 rounded-full hover:bg-primary/20 transition-all cursor-pointer"
+                        >
+                          عرض الكل
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-1 -mx-4 sm:mx-0">
+                      {mediaPlaylists.map((playlist) => (
+                        <button 
+                          key={playlist.id} 
+                          onClick={() => setSelectedPlaylistId(selectedPlaylistId === playlist.id ? null : playlist.id)}
+                          className={`flex-shrink-0 w-36 flex flex-col gap-2 cursor-pointer text-right group transition-all duration-300 ${(!selectedPlaylistId || selectedPlaylistId === playlist.id) ? 'opacity-100' : 'opacity-40 hover:opacity-80'}`}
+                        >
+                          <div className={`aspect-square w-full rounded-[28px] overflow-hidden border-2 transition-all duration-300 ${selectedPlaylistId === playlist.id ? 'border-primary ring-4 ring-primary/10 scale-95 shadow-md' : 'border-transparent shadow-lg group-hover:scale-[1.03]'}`}>
+                            <img src={getOptimizedImage(playlist.coverUrl || '', 300) || undefined} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          </div>
+                          <div className="px-1">
+                            <p className={`text-xs font-black line-clamp-1 transition-colors ${selectedPlaylistId === playlist.id ? 'text-primary' : 'text-slate-700 dark:text-slate-300 group-hover:text-primary'}`}>{playlist.title}</p>
+                            <p className="text-[9px] font-bold text-slate-400">{media.filter(m => m.playlistId === playlist.id).length} عنصر</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 {/* Media Type Sub-Tabs */}
-                <div className="flex items-center gap-3 bg-white dark:bg-card-dark p-2 rounded-2xl border border-border-light dark:border-border-dark inline-flex">
-                  <button 
-                    onClick={() => setMediaTypeFilter('all')}
-                    className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${mediaTypeFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-background-dark'}`}
-                  >
-                    الكل
-                  </button>
-                  <button 
-                    onClick={() => setMediaTypeFilter('photo')}
-                    className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${mediaTypeFilter === 'photo' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-background-dark'}`}
-                  >
-                    <ImageIcon size={14} />
-                    صور
-                  </button>
-                  <button 
-                    onClick={() => setMediaTypeFilter('video')}
-                    className={`px-6 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${mediaTypeFilter === 'video' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-background-dark'}`}
-                  >
-                    <Video size={14} />
-                    فيديو
-                  </button>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-2 bg-slate-100 dark:bg-card-dark p-1.5 rounded-2xl border border-border-light/60 dark:border-border-dark/60">
+                    {[
+                      { id: 'all', label: 'الكل', icon: null },
+                      { id: 'photo', label: 'صور', icon: <ImageIcon size={14} /> },
+                      { id: 'video', label: 'فيديو', icon: <Video size={14} /> }
+                    ].map((tab) => (
+                      <button 
+                        key={tab.id}
+                        onClick={() => setMediaTypeFilter(tab.id as any)}
+                        className={`px-5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${mediaTypeFilter === tab.id ? 'bg-white dark:bg-primary text-primary-dark dark:text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'}`}
+                      >
+                        {tab.icon}
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {selectedPlaylistId && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-xl">
+                      <span>تصفية حسب: {mediaPlaylists.find(p => p.id === selectedPlaylistId)?.title}</span>
+                      <button onClick={() => setSelectedPlaylistId(null)} className="hover:text-red-500 cursor-pointer">
+                        <X size={12} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {filteredMedia.map((item) => (
-                        <motion.div 
-                          key={item.id}
-                          whileHover={{ y: -5 }}
-                          onClick={() => setSelectedMedia(item)}
-                          className="group relative h-64 rounded-[32px] overflow-hidden shadow-premium cursor-pointer"
+                  {filteredMedia.map((item) => (
+                    <motion.div 
+                      key={item.id}
+                      whileHover={{ y: -6 }}
+                      onClick={() => setSelectedMedia(item)}
+                      className="group relative h-64 rounded-[32px] overflow-hidden shadow-premium border border-border-light/20 dark:border-border-dark/20 cursor-pointer bg-slate-100 dark:bg-card-dark"
+                    >
+                      <img src={getOptimizedImage(item.thumbnailUrl, 600) || undefined} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" referrerPolicy="no-referrer" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"></div>
+                      
+                      <div className="absolute top-5 right-5 flex flex-col gap-2 scale-90 group-hover:scale-100 transition-all opacity-0 group-hover:opacity-100 z-10">
+                        <button 
+                          onClick={(e) => handleLikeMedia(e, item)}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center backdrop-blur-md border transition-all ${item.likes?.includes(auth.currentUser?.uid) ? 'bg-primary text-white border-primary' : 'bg-white/20 text-white border-white/20 hover:bg-primary'}`}
                         >
-                          <img src={item.thumbnailUrl || undefined} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                          
-                          <div className="absolute top-6 right-6 flex flex-col gap-2 scale-90 group-hover:scale-100 transition-all opacity-0 group-hover:opacity-100">
-                             <button 
-                               onClick={(e) => handleLikeMedia(e, item)}
-                               className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border transition-all ${item.likes?.includes(auth.currentUser?.uid) ? 'bg-primary text-white border-primary' : 'bg-white/20 text-white border-white/20 hover:bg-primary'}`}
-                             >
-                               <Heart size={18} fill={item.likes?.includes(auth.currentUser?.uid) ? 'currentColor' : 'none'} />
-                             </button>
-                             <button 
-                               onClick={(e) => { e.stopPropagation(); handleDownload(item.videoUrl || item.thumbnailUrl, item.title); }}
-                               className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all"
-                             >
-                               <Download size={18} />
-                             </button>
-                          </div>
+                          <Heart size={16} fill={item.likes?.includes(auth.currentUser?.uid) ? 'currentColor' : 'none'} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDownload(item.videoUrl || item.thumbnailUrl, item.title); }}
+                          className="w-9 h-9 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/20 hover:bg-slate-800 transition-all"
+                        >
+                          <Download size={16} />
+                        </button>
+                      </div>
 
-                          <div className="absolute inset-0 flex flex-col justify-end p-6">
-                             <span className="text-primary text-[10px] font-black uppercase tracking-wider mb-1">
-                               {item.type === 'video' ? 'فيديو' : 'صورة'}
-                             </span>
-                             <h3 className="text-white text-lg font-black leading-tight line-clamp-2">{item.title}</h3>
-                             <div className="flex items-center justify-between mt-3">
-                                {item.duration && <span className="text-white/60 text-[10px] font-bold flex items-center gap-1"><Clock size={12} /> {item.duration}</span>}
-                                <span className="text-white/60 text-[10px] font-bold flex items-center gap-1">
-                                   <Heart size={12} fill="currentColor" className="text-primary" />
-                                   {item.likes?.length || 0}
-                                </span>
-                             </div>
-                          </div>
+                      <div className="absolute inset-0 flex flex-col justify-end p-6 z-0">
+                        <span className="text-primary text-[10px] font-black uppercase tracking-wider mb-1">
+                          {item.type === 'video' ? 'فيديو' : 'صورة'}
+                        </span>
+                        <h3 className="text-white text-base font-black leading-tight line-clamp-2 drop-shadow-md group-hover:text-primary transition-colors">{item.title}</h3>
+                        <div className="flex items-center justify-between mt-3 text-white/60 text-[10px] font-bold">
+                          {item.duration && <span className="flex items-center gap-1"><Clock size={12} /> {item.duration}</span>}
+                          <span className="flex items-center gap-1">
+                            <Heart size={12} fill="currentColor" className="text-primary" />
+                            {item.likes?.length || 0}
+                          </span>
+                        </div>
+                      </div>
 
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center scale-0 group-hover:scale-100 transition-all duration-300 shadow-2xl">
-                             {item.type === 'video' ? <Play fill="currentColor" size={24} /> : <Maximize2 size={24} />}
-                          </div>
-                        </motion.div>
-                      ))}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center scale-0 group-hover:scale-100 transition-all duration-300 shadow-2xl z-10">
+                        {item.type === 'video' ? <Play fill="currentColor" size={20} className="ml-1" /> : <Maximize2 size={20} />}
+                      </div>
+                    </motion.div>
+                  ))}
                   {filteredMedia.length === 0 && (
-                     <div className="col-span-full py-12 text-center bg-white dark:bg-card-dark rounded-3xl border-2 border-dashed border-slate-200 dark:border-border-dark">
-                        <LibraryIcon className="mx-auto text-slate-300 mb-2" size={48} />
-                        <p className="text-slate-400 font-bold">لا توجد نتائج في هذا القسم</p>
-                     </div>
+                    <div className="col-span-full py-16 text-center bg-white dark:bg-card-dark rounded-3xl border-2 border-dashed border-slate-200 dark:border-border-dark">
+                      <LibraryIcon className="mx-auto text-slate-300 mb-2 opacity-50" size={48} />
+                      <p className="text-slate-400 font-bold">لا توجد وسائط مضافة في هذا القسم</p>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -546,14 +612,14 @@ export default function Library() {
               </div>
 
               <div className="aspect-video w-full rounded-[40px] overflow-hidden bg-slate-900 shadow-2xl relative border border-white/10">
-                 {selectedMedia.type === 'video' ? (
+                 {selectedMedia.type === 'video' ? (isEmbeddable(selectedMedia.videoUrl || selectedMedia.url || '') || selectedMedia.source === 'embed' ? <iframe src={getEmbedUrl(selectedMedia.videoUrl || selectedMedia.url || '', selectedMedia.source) || undefined} className="w-full h-full border-none" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" title={selectedMedia.title}></iframe> : (
                    <video 
                      src={selectedMedia.videoUrl || undefined} 
                      controls 
                      autoPlay 
                      className="w-full h-full object-contain"
                    />
-                 ) : (
+                 )) : (
                    <img 
                      src={selectedMedia.thumbnailUrl || undefined} 
                      className="w-full h-full object-contain" 

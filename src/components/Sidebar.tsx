@@ -18,6 +18,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
   const { appSettings, customPages } = useAppStore();
   const navigate = useNavigate();
+  const [isMediaOpen, setIsMediaOpen] = useState(false);
   
   // No longer needing local fetch as it's synced in useFirestoreSync
   
@@ -75,7 +76,7 @@ export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
               </button>
               <Link to="/profile" onClick={onClose} className="flex items-center gap-4 relative z-10 pt-6 cursor-pointer hover:opacity-90 transition-opacity">
                 <div className="h-16 w-16 rounded-[22px] bg-white/10 p-1 ring-2 ring-accent/30 shadow-2xl overflow-hidden flex items-center justify-center backdrop-blur-md">
-                  <img src={getOptimizedImage((isAnonymous ? appSettings.appLogo : profile.avatar), 200) || undefined} onError={(e) => { e.currentTarget.src = 'https://res.cloudinary.com/dqj6gzwfg/image/upload/v1777716805/favicon_gd0ic4.png'; }} alt="Profile" className="w-full h-full object-contain rounded-[18px]" referrerPolicy="no-referrer" />
+                  <img src={getOptimizedImage((isAnonymous ? appSettings.appLogo : profile.avatar), 200) || undefined} onError={(e) => { e.currentTarget.src = '/icon.png'; }} alt="Profile" className="w-full h-full object-contain rounded-[18px]" referrerPolicy="no-referrer" />
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white leading-tight">
@@ -149,11 +150,18 @@ export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
                 <span className="px-2 py-0.5 bg-red-500 text-white text-[8px] font-black rounded-full animate-pulse uppercase">NEW</span>
               </Link>
 
-              <Link to="/media" onClick={onClose} className="flex items-center gap-3 p-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-slate-700 dark:text-slate-300 pressable group">
+              <Link to="/history" onClick={onClose} className="flex items-center gap-3 p-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-slate-700 dark:text-slate-300 pressable group">
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-white/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined !text-[20px]">movie</span>
+                  <span className="material-symbols-outlined !text-[20px]">history</span>
                 </div>
-                <span className="text-sm font-bold">فيديو وملخصات</span>
+                <span className="text-sm font-bold">تاريخ النادي</span>
+              </Link>
+
+              <Link to="/library" onClick={onClose} className="flex items-center gap-3 p-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-slate-700 dark:text-slate-300 pressable group">
+                <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-white/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined !text-[20px]">video_library</span>
+                </div>
+                <span className="text-sm font-bold">المكتبة الرقمية</span>
               </Link>
 
               <Link to="/store" onClick={onClose} className="flex items-center gap-3 p-3.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-slate-700 dark:text-slate-300 pressable group">
@@ -225,7 +233,7 @@ export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center">
                     {(appSettings.logoType || 'image') === 'image' ? (
-                      <img src={getOptimizedImage(appSettings.appLogo, 100) || undefined} onError={(e) => { e.currentTarget.src = 'https://res.cloudinary.com/dqj6gzwfg/image/upload/v1777716805/favicon_gd0ic4.png'; }} className="h-6 w-6 opacity-40 grayscale" alt="" referrerPolicy="no-referrer" />
+                      <img src={getOptimizedImage(appSettings.appLogo, 100) || undefined} onError={(e) => { e.currentTarget.src = '/icon.png'; }} className="h-6 w-6 opacity-40 grayscale" alt="" referrerPolicy="no-referrer" />
                     ) : (
                       <span className="text-sm font-black text-slate-400 opacity-60">M</span>
                     )}
