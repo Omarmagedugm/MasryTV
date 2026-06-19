@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAppStore, UserProfile } from '../store';
 import React, { useState, useEffect } from 'react';
 import { Camera, X, Check, Lock, ShieldCheck, Mail, Loader2, Save, Upload, Edit2, Newspaper } from 'lucide-react';
-import { db, auth, uploadImage, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, auth, uploadImage, handleFirestoreError, OperationType, requestNotificationPermission } from '../lib/firebase';
 import { doc, updateDoc, setDoc } from 'firebase/firestore';
 import { updatePassword, updateProfile as updateAuthProfile } from 'firebase/auth';
 import toast from 'react-hot-toast';
@@ -25,7 +25,34 @@ export default function Profile() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission === 'granted' : false
+  );
+
+  const toggleNotifications = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission !== 'granted') {
+        const token = await requestNotificationPermission();
+        if (token) {
+          setNotificationsEnabled(true);
+          toast.success('تم تفعيل الإشعارات بنجاح!');
+        } else {
+          setNotificationsEnabled(false);
+          toast.error('يرجى السماح بالإشعارات من إعدادات المتصفح');
+        }
+      } else {
+        const nextState = !notificationsEnabled;
+        setNotificationsEnabled(nextState);
+        if (!nextState) {
+          toast.success('تم إيقاف التنبيهات مؤقتاً');
+        } else {
+          toast.success('تم تفعيل التنبيهات');
+        }
+      }
+    } else {
+      toast.error('الإشعارات غير مدعومة في هذا المتصفح');
+    }
+  };
   const navigate = useNavigate();
 
   // Handle auth state check
@@ -315,7 +342,7 @@ export default function Profile() {
           <div className="overflow-hidden rounded-3xl bg-white shadow-sm border border-border-light/60 dark:border-border-dark dark:bg-card-dark">
             {/* Notification Setting */}
             <button 
-              onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+              onClick={toggleNotifications}
               className="flex w-full items-center justify-between p-4 transition-colors hover:bg-slate-50 dark:hover:bg-surface-dark pressable group"
             >
               <div className="flex items-center gap-4">

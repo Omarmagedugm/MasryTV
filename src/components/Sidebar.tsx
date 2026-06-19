@@ -137,7 +137,7 @@ export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-accent/10 text-accent group-hover:bg-accent group-hover:text-white transition-all">
                   <span className="material-symbols-outlined !text-[20px]">stadium</span>
                 </div>
-                <span className="text-sm font-black">مجتمع المشجعين</span>
+                <span className="text-sm font-black">فان زون</span>
               </Link>
 
               <Link to="/jersey-tryon" onClick={onClose} className="flex items-center justify-between p-3.5 rounded-2xl bg-primary/5 hover:bg-primary/10 transition-colors text-slate-700 dark:text-slate-300 pressable group border border-primary/10">
@@ -168,7 +168,7 @@ export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-white/5 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                   <span className="material-symbols-outlined !text-[20px]">shopping_bag</span>
                 </div>
-                <span className="text-sm font-bold">Store</span>
+                <span className="text-sm font-bold">متجر الجماهير</span>
               </Link>
 
               <div className="py-2 px-4 mt-2">

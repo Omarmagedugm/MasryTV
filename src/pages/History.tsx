@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Trophy, History as HistoryIcon, MapPin, Calendar, Star, Award, Shield, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, addDoc } from 'firebase/firestore';
 
 const AnimatedCounter = ({ value, duration = 2 }: { value: number; duration?: number }) => {
   const count = useMotionValue(0);
@@ -32,18 +32,90 @@ export default function History() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let statsDone = false;
+    let titlesDone = false;
+    let timelineDone = false;
+    let stadiumsDone = false;
+
+    let statsList: any[] = [];
+    let titlesList: any[] = [];
+    let timelineList: any[] = [];
+    let stadiumsList: any[] = [];
+
+    const checkAndSeed = async () => {
+      if (statsDone && titlesDone && timelineDone && stadiumsDone) {
+        if (statsList.length === 0 && titlesList.length === 0 && timelineList.length === 0 && stadiumsList.length === 0) {
+          console.log('Seeding initial history data from History page...');
+          try {
+            const stats = [
+              { label: 'سنة مرت', value: 120, icon: 'calendar', hidden: false },
+              { label: 'كأس مصر', value: 1, icon: 'trophy', hidden: false },
+              { label: 'دوري القنال', value: 17, icon: 'shield', hidden: false },
+              { label: 'كأس السلطان', value: 3, icon: 'award', hidden: false },
+            ];
+            for (const s of stats) {
+              await addDoc(collection(db, 'club_stats'), s);
+            }
+
+            const titles = [
+              { name: 'كأس مصر', count: 1, icon: 'trophy', category: 'football', hidden: false },
+              { name: 'دوري منطقة القنال', count: 17, icon: 'shield', category: 'football', hidden: false },
+              { name: 'كأس السلطان حسين', count: 3, icon: 'star', category: 'football', hidden: false },
+              { name: 'المركز الثالث بالدوري', count: 2, icon: 'star', category: 'football', hidden: false },
+            ];
+            for (const t of titles) {
+              await addDoc(collection(db, 'club_titles'), t);
+            }
+
+            const timeline = [
+              { year: '1920', title: 'تأسيس النادي', desc: 'تأسس النادي المصري البورسعيدي ليكون أول نادٍ للمصريين في منطقة القنال لمواجهة أندية الأجانب.', hidden: false },
+              { year: '1923', title: 'كأس السلطان حسين', desc: 'المصري يحقق أولى بطولاته الرسمية بالفوز بكأس السلطان حسين.', hidden: false },
+              { year: '1948', title: 'الدوري الممتاز', desc: 'المصري يشارك في أول نسخة للدوري المصري الممتاز لكرة القدم.', hidden: false },
+              { year: '1998', title: 'كأس مصر التاريخي', desc: 'المصري يحصد لقب كأس مصر بعد فوز تاريخي على المقاولون العرب في النهائي.', hidden: false },
+              { year: '2020', title: 'مئوية النادي', desc: 'الاحتفال بمرور 100 عام على تأسيس قلعة النسور الخضراء.', hidden: false },
+            ];
+            for (const ev of timeline) {
+              await addDoc(collection(db, 'club_timeline'), ev);
+            }
+
+            const stadiums = [
+              { name: 'إستاد بورسعيد', type: 'الملعب الرئيسي', desc: 'الملعب التاريخي للنادي المصري في قلب مدينة بورسعيد الباسلة.', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80', hidden: false },
+            ];
+            for (const st of stadiums) {
+              await addDoc(collection(db, 'club_stadiums'), st);
+            }
+            console.log('Seeding complete from History page.');
+          } catch (e) {
+            console.error('Error seeding history from History page:', e);
+          }
+        }
+      }
+    };
+
     const unsubStats = onSnapshot(collection(db, 'club_stats'), (snap) => {
-      setClubStats(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any)).filter(i => !i.hidden));
+      statsList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      setClubStats(statsList.filter(i => !i.hidden));
+      statsDone = true;
+      checkAndSeed();
     });
     const unsubTitles = onSnapshot(collection(db, 'club_titles'), (snap) => {
-      setClubTitles(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any)).filter(i => !i.hidden));
+      titlesList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      setClubTitles(titlesList.filter(i => !i.hidden));
+      titlesDone = true;
+      checkAndSeed();
     });
     const unsubTimeline = onSnapshot(query(collection(db, 'club_timeline'), orderBy('year', 'asc')), (snap) => {
-      setHistoryEvents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any)).filter(i => !i.hidden));
+      timelineList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      setHistoryEvents(timelineList.filter(i => !i.hidden));
+      timelineDone = true;
+      checkAndSeed();
     });
     const unsubStadiums = onSnapshot(collection(db, 'club_stadiums'), (snap) => {
-      setStadiums(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any)).filter(i => !i.hidden));
+      stadiumsList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+      setStadiums(stadiumsList.filter(i => !i.hidden));
+      stadiumsDone = true;
       setLoading(false);
+      checkAndSeed();
     });
 
     return () => {

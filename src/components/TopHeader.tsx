@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import Sidebar from './Sidebar';
 import { db, auth } from '../lib/firebase';
 import { collection, query, where, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../lib/firebase';
+import { handleFirestoreError, OperationType, requestNotificationPermission } from '../lib/firebase';
 import toast from 'react-hot-toast';
 
 export default function TopHeader() {
@@ -114,8 +114,24 @@ export default function TopHeader() {
     }
   };
 
-  const handleOpenNotifications = () => {
+  const handleOpenNotifications = async () => {
     setShowNotifications(true);
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        if (Notification.permission === 'granted') {
+          await requestNotificationPermission();
+        } else if (Notification.permission === 'default') {
+          const token = await requestNotificationPermission();
+          if (token) {
+            toast.success('تم تفعيل الإشعارات بنجاح!');
+          }
+        } else {
+          toast.error('يرجى السماح بالإشعارات من إعدادات المتصفح');
+        }
+      }
+    } catch (err) {
+      console.warn('Error activating notifications:', err);
+    }
   };
 
   return (

@@ -11,15 +11,15 @@
   --color-accent-hover: #C99E3F;
   
   --color-background-light: #FAF9F6; /* Luxury Warm Off-White */
-  --color-background-dark: #07150E; /* Deep Emerald Forest Black */
+  --color-background-dark: #071F13; /* Premium Deep Emerald Forest Green */
   
-  --color-surface-dark: #0B1E15;
+  --color-surface-dark: #0B2819; /* Lighter emerald forest shade for surfaces */
   --color-surface-light: #FFFFFF;
   
-  --color-card-dark: #122B1E;
+  --color-card-dark: #113924; /* Distinct green-emerald card background */
   --color-card-light: #FFFFFF;
   
-  --color-border-dark: #1C3C2C;
+  --color-border-dark: #184A30; /* Fine forest-green border color */
   --color-border-light: #EBF1EA;
   
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
