@@ -44,11 +44,11 @@ export default function History() {
 
     const checkAndSeed = async () => {
       if (statsDone && titlesDone && timelineDone && stadiumsDone) {
-        if (statsList.length === 0 && titlesList.length === 0 && timelineList.length === 0 && stadiumsList.length === 0) {
-          console.log('Seeding initial history data from History page...');
-          try {
+        try {
+          if (statsList.length === 0) {
+            console.log('Seeding initial club_stats data...');
             const stats = [
-              { label: 'سنة مرت', value: 120, icon: 'calendar', hidden: false },
+              { label: 'سنة مرت', value: 106, icon: 'calendar', hidden: false },
               { label: 'كأس مصر', value: 1, icon: 'trophy', hidden: false },
               { label: 'دوري القنال', value: 17, icon: 'shield', hidden: false },
               { label: 'كأس السلطان', value: 3, icon: 'award', hidden: false },
@@ -56,7 +56,10 @@ export default function History() {
             for (const s of stats) {
               await addDoc(collection(db, 'club_stats'), s);
             }
+          }
 
+          if (titlesList.length === 0) {
+            console.log('Seeding initial club_titles data...');
             const titles = [
               { name: 'كأس مصر', count: 1, icon: 'trophy', category: 'football', hidden: false },
               { name: 'دوري منطقة القنال', count: 17, icon: 'shield', category: 'football', hidden: false },
@@ -66,7 +69,10 @@ export default function History() {
             for (const t of titles) {
               await addDoc(collection(db, 'club_titles'), t);
             }
+          }
 
+          if (timelineList.length === 0) {
+            console.log('Seeding initial club_timeline data...');
             const timeline = [
               { year: '1920', title: 'تأسيس النادي', desc: 'تأسس النادي المصري البورسعيدي ليكون أول نادٍ للمصريين في منطقة القنال لمواجهة أندية الأجانب.', hidden: false },
               { year: '1923', title: 'كأس السلطان حسين', desc: 'المصري يحقق أولى بطولاته الرسمية بالفوز بكأس السلطان حسين.', hidden: false },
@@ -77,17 +83,20 @@ export default function History() {
             for (const ev of timeline) {
               await addDoc(collection(db, 'club_timeline'), ev);
             }
+          }
 
+          if (stadiumsList.length === 0) {
+            console.log('Seeding initial club_stadiums data...');
             const stadiums = [
               { name: 'إستاد بورسعيد', type: 'الملعب الرئيسي', desc: 'الملعب التاريخي للنادي المصري في قلب مدينة بورسعيد الباسلة.', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80', hidden: false },
             ];
             for (const st of stadiums) {
               await addDoc(collection(db, 'club_stadiums'), st);
             }
-            console.log('Seeding complete from History page.');
-          } catch (e) {
-            console.error('Error seeding history from History page:', e);
           }
+          console.log('Seeding check completed.');
+        } catch (e) {
+          console.error('Error seeding history from History page:', e);
         }
       }
     };

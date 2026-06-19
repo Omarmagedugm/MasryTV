@@ -1438,56 +1438,54 @@ export default function Admin() {
   useEffect(() => {
     // Auto-seed history if empty
     const seedHistory = async () => {
-      // Check if all history collections are empty to avoid partial seeding
-      // We use a local check to avoid double-seeding if the state hasn't updated yet
-      const isSeededKey = 'history_data_seeded_v1';
-      if (localStorage.getItem(isSeededKey)) return;
-
-      if (clubStats.length === 0 && clubTitles.length === 0 && historyEvents.length === 0 && stadiums.length === 0) {
-        console.log('Seeding initial history data...');
-        try {
-          // Double check with a real server fetch to be absolutely sure
-          const statsSnap = await getDocs(collection(db, 'club_stats'));
-          if (!statsSnap.empty) {
-            localStorage.setItem(isSeededKey, 'true');
-            return;
-          }
-
+      try {
+        const statsSnap = await getDocs(collection(db, 'club_stats'));
+        if (statsSnap.empty) {
+          console.log('Seeding initial club_stats data...');
           const stats = [
-            { label: 'سنة مرت', value: 120, icon: 'calendar' },
-            { label: 'كأس مصر', value: 1, icon: 'trophy' },
-            { label: 'دوري القنال', value: 17, icon: 'shield' },
-            { label: 'كأس السلطان', value: 3, icon: 'award' },
+            { label: 'سنة مرت', value: 106, icon: 'calendar', hidden: false },
+            { label: 'كأس مصر', value: 1, icon: 'trophy', hidden: false },
+            { label: 'دوري القنال', value: 17, icon: 'shield', hidden: false },
+            { label: 'كأس السلطان', value: 3, icon: 'award', hidden: false },
           ];
           for (const s of stats) await addDoc(collection(db, 'club_stats'), s);
+        }
 
+        const titlesSnap = await getDocs(collection(db, 'club_titles'));
+        if (titlesSnap.empty) {
+          console.log('Seeding initial club_titles data...');
           const titles = [
-            { name: 'كأس مصر', count: 1, icon: 'trophy', category: 'football' },
-            { name: 'دوري منطقة القنال', count: 17, icon: 'shield', category: 'football' },
-            { name: 'كأس السلطان حسين', count: 3, icon: 'star', category: 'football' },
-            { name: 'المركز الثالث بالدوري', count: 2, icon: 'star', category: 'football' },
+            { name: 'كأس مصر', count: 1, icon: 'trophy', category: 'football', hidden: false },
+            { name: 'دوري منطقة القنال', count: 17, icon: 'shield', category: 'football', hidden: false },
+            { name: 'كأس السلطان حسين', count: 3, icon: 'star', category: 'football', hidden: false },
+            { name: 'المركز الثالث بالدوري', count: 2, icon: 'star', category: 'football', hidden: false },
           ];
           for (const t of titles) await addDoc(collection(db, 'club_titles'), t);
+        }
 
+        const timelineSnap = await getDocs(collection(db, 'club_timeline'));
+        if (timelineSnap.empty) {
+          console.log('Seeding initial club_timeline data...');
           const timeline = [
-            { year: '1920', title: 'تأسيس النادي', desc: 'تأسس النادي المصري البورسعيدي ليكون أول نادٍ للمصريين في منطقة القنال لمواجهة أندية الأجانب.' },
-            { year: '1923', title: 'كأس السلطان حسين', desc: 'المصري يحقق أولى بطولاته الرسمية بالفوز بكأس السلطان حسين.' },
-            { year: '1948', title: 'الدوري الممتاز', desc: 'المصري يشارك في أول نسخة للدوري المصري الممتاز لكرة القدم.' },
-            { year: '1998', title: 'كأس مصر التاريخي', desc: 'المصري يحصد لقب كأس مصر بعد فوز تاريخي على المقاولون العرب في النهائي.' },
-            { year: '2020', title: 'مئوية النادي', desc: 'الاحتفال بمرور 100 عام على تأسيس قلعة النسور الخضراء.' },
+            { year: '1920', title: 'تأسيس النادي', desc: 'تأسس النادي المصري البورسعيدي ليكون أول نادٍ للمصريين في منطقة القنال لمواجهة أندية الأجانب.', hidden: false },
+            { year: '1923', title: 'كأس السلطان حسين', desc: 'المصري يحقق أولى بطولاته الرسمية بالفوز بكأس السلطان حسين.', hidden: false },
+            { year: '1948', title: 'الدوري الممتاز', desc: 'المصري يشارك في أول نسخة للدوري المصري الممتاز لكرة القدم.', hidden: false },
+            { year: '1998', title: 'كأس مصر التاريخي', desc: 'المصري يحصد لقب كأس مصر بعد فوز تاريخي على المقاولون العرب في النهائي.', hidden: false },
+            { year: '2020', title: 'مئوية النادي', desc: 'الاحتفال بمرور 100 عام على تأسيس قلعة النسور الخضراء.', hidden: false },
           ];
           for (const ev of timeline) await addDoc(collection(db, 'club_timeline'), ev);
+        }
 
+        const stadiumsSnap = await getDocs(collection(db, 'club_stadiums'));
+        if (stadiumsSnap.empty) {
+          console.log('Seeding initial club_stadiums data...');
           const stadiumsList = [
-            { name: 'إستاد بورسعيد', type: 'الملعب الرئيسي', desc: 'الملعب التاريخي للنادي المصري في قلب مدينة بورسعيد الباسلة.', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80' },
+            { name: 'إستاد بورسعيد', type: 'الملعب الرئيسي', desc: 'الملعب التاريخي للنادي المصري في قلب مدينة بورسعيد الباسلة.', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80', hidden: false },
           ];
           for (const st of stadiumsList) await addDoc(collection(db, 'club_stadiums'), st);
-
-          console.log('Seeding complete.');
-          localStorage.setItem(isSeededKey, 'true');
-        } catch (error) {
-          console.error('Error auto-seeding history:', error);
         }
+      } catch (error) {
+        console.error('Error auto-seeding history:', error);
       }
     };
     seedHistory();

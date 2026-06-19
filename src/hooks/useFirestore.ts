@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, doc, limit, updateDoc, where, getDocs, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, limit, updateDoc, where, getDocs, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { useAppStore } from '../store';
 
@@ -22,7 +22,7 @@ export function useFirestoreSync() {
       const now = Date.now();
       
       if (!lastUpdate || now - parseInt(lastUpdate) > 4 * 60 * 60 * 1000) {
-        updateDoc(doc(db, 'users', currentUser.uid), { lastActive: new Date().toISOString() })
+        setDoc(doc(db, 'users', currentUser.uid), { lastActive: new Date().toISOString() }, { merge: true })
           .then(() => localStorage.setItem(lastUpdateKey, now.toString()))
           .catch(err => console.error('Failed to update activity:', err));
       }
@@ -121,10 +121,17 @@ export function useFirestoreSync() {
         try {
           const ordersQuery = isAdminProfile 
             ? query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
-            : query(collection(db, 'orders'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+            : query(collection(db, 'orders'), where('userId', '==', currentUser.uid));
             
           unsubOrders = onSnapshot(ordersQuery, (snapshot) => {
-            const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
+            let items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
+            if (!isAdminProfile) {
+              items.sort((a: any, b: any) => {
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return dateB - dateA;
+              });
+            }
             useAppStore.getState().setOrders(items);
           }, (error) => handleFirestoreError(error, OperationType.LIST, 'orders'));
         } catch (e) {
@@ -171,11 +178,12 @@ export function useFirestoreSync() {
         const catchErr = (path: string) => (err: any) => handleFirestoreError(err, OperationType.GET, path);
         
         // Helper for fetching collections
-        const fetchCol = async (colName: string, setter: (data: any) => void, q?: any) => {
+        const fetchCol = async (colName: string, setter: (data: any) => void, q?: any, mapFn?: (data: any[]) => any[]) => {
           try {
             await fetchWithCache(colName, setter, async () => {
               const snap = await getDocs(q || collection(db, colName));
-              return snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+              const items = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+              return mapFn ? mapFn(items) : items;
             });
           } catch (err) {
             setter([]); // Fallback to empty array to prevent state from remaining undefined
@@ -213,8 +221,16 @@ export function useFirestoreSync() {
         fetchCol('polls', setPolls);
         fetchCol('predictions', setPredictions);
         fetchCol('products', setProducts);
-        fetchCol('ads', setAds, query(collection(db, 'ads'), where('active', '==', true), orderBy('order', 'asc')));
+        fetchCol('ads', setAds, undefined, (items) => {
+          return items
+            .filter(item => item.active === true)
+            .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+        });
         fetchCol('custom_pages', setCustomPages);
+        fetchCol('club_stats', setClubStats);
+        fetchCol('club_titles', setClubTitles);
+        fetchCol('club_timeline', setHistoryEvents, query(collection(db, 'club_timeline'), orderBy('year', 'asc')));
+        fetchCol('club_stadiums', setStadiums);
         const profile = useAppStore.getState().profile;
         const email = auth.currentUser?.email?.toLowerCase();
         const isAdminOrManager = (profile?.role === 'admin') || 
