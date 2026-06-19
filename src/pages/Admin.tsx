@@ -485,6 +485,33 @@ export default function Admin() {
     e.target.value = '';
   };
 
+  const handleLoadEmbeddedBackup = async () => {
+    setIsImporting(true);
+    const loadToast = toast.loading('جاري تحميل ملف النسخة الاحتياطية المرفقة...');
+    try {
+      const res = await fetch('/backup_data.json');
+      if (!res.ok) throw new Error('لم يتم العثور على ملف النسخة الاحتياطية المدمج أو فشل تحميله');
+      const data = await res.json();
+      const keys = Object.keys(data);
+      const isValid = keys.length > 0 && keys.every(k => Array.isArray(data[k]));
+      
+      if (!isValid) {
+        throw new Error('بيانات النسخة الاحتياطية المدمجة غير صالحة أو غير متوافقة.');
+      }
+      
+      setParsedBackupData(data);
+      setShowImportOptions(true);
+      toast.dismiss(loadToast);
+      toast.success('تم تحميل النسخة الاحتياطية المرفقة بنجاح! حدد خيار الاستيراد لإضافتها.');
+    } catch (err: any) {
+      console.error(err);
+      toast.dismiss(loadToast);
+      toast.error('فشل تحميل النسخة الاحتياطية: ' + (err.message || String(err)));
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const handleImportDatabase = async (mode: 'merge' | 'overwrite') => {
     if (!parsedBackupData) return;
     
@@ -3350,7 +3377,7 @@ export default function Admin() {
                 <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">System Maintenance & Data Management</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-card-dark p-6 rounded-3xl border border-border-light dark:border-border-dark flex flex-col items-center text-center">
                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-4">
                       <Database size={28} />
@@ -3391,6 +3418,24 @@ export default function Admin() {
                    >
                      {isImporting ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
                      رفع واستعادة النسخة
+                   </button>
+                </div>
+
+                <div className="bg-white dark:bg-card-dark p-6 rounded-3xl border border-border-light dark:border-border-dark flex flex-col items-center text-center">
+                   <div className="w-14 h-14 bg-violet-500/10 rounded-2xl flex items-center justify-center text-violet-500 mb-4">
+                      <Sparkles size={28} />
+                   </div>
+                   <h4 className="text-sm font-black mb-1">استعادة نسخة النظام المدمجة</h4>
+                   <p className="text-[10px] font-bold text-slate-500 mb-6 leading-relaxed">
+                     شحن قاعدة البيانات من ملف النسخة الاحتياطية المدمج مباشرة وبسرعة فائقة
+                   </p>
+                   <button 
+                    onClick={handleLoadEmbeddedBackup}
+                    disabled={isImporting}
+                    className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-black text-[10px] flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+                   >
+                     {isImporting ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
+                     استيراد النسخة المرفقة
                    </button>
                 </div>
 

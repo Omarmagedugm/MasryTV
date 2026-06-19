@@ -1,0 +1,596 @@
+{
+  "users": [
+    {
+      "id": "5e73ovrp9NgeyKYdVewtzrglXiF3",
+      "lastActive": "2026-06-18T11:10:17.865Z",
+      "bio": "مشجع جديد في عائلة النادي المصري - النسور الخضراء",
+      "username": "sallythabet",
+      "joinDate": "2026",
+      "name": "Sally",
+      "avatar": "https://ui-avatars.com/api/?name=Sally&background=random&color=ffffff&background=10b981",
+      "stats": {
+        "comments": 0,
+        "favorites": 0,
+        "predictions": 0
+      },
+      "roles": [
+        "admin"
+      ],
+      "email": "Sallythabet56@gmail.com",
+      "uid": "5e73ovrp9NgeyKYdVewtzrglXiF3",
+      "tier": "new",
+      "role": "admin"
+    },
+    {
+      "id": "HB7Jcntzpyc5HBldUgNHA8AQ4es1",
+      "username": "abdelrahmanfawzy",
+      "avatar": "https://ui-avatars.com/api/?name=Abdelrahman%20Fawzy&background=random&color=ffffff&background=10b981",
+      "role": "user",
+      "bio": "مشجع جديد في عائلة النادي المصري - النسور الخضراء",
+      "uid": "HB7Jcntzpyc5HBldUgNHA8AQ4es1",
+      "email": "bodykhara43@gmail.com",
+      "joinDate": "2026",
+      "lastActive": "2026-06-17T18:00:22.772Z",
+      "name": "Abdelrahman Fawzy",
+      "tier": "new",
+      "stats": {
+        "predictions": 0,
+        "favorites": 0,
+        "comments": 0
+      }
+    },
+    {
+      "id": "PSXHJlTR1WTiPhLvyTw0algfEal1",
+      "avatar": "https://ui-avatars.com/api/?name=%E2%80%8FAhmed%20zidane&background=random&color=ffffff&background=10b981",
+      "name": "‏Ahmed zidane",
+      "joinDate": "2026",
+      "stats": {
+        "comments": 0,
+        "predictions": 0,
+        "favorites": 0
+      },
+      "tier": "new",
+      "roles": [
+        "admin"
+      ],
+      "email": "Ahmmamdouh10@gmail.com",
+      "uid": "PSXHJlTR1WTiPhLvyTw0algfEal1",
+      "role": "admin",
+      "lastActive": "2026-06-19T13:59:40.467Z",
+      "bio": "مشجع جديد في عائلة النادي المصري - النسور الخضراء",
+      "username": "ahmedzidane10"
+    },
+    {
+      "id": "THScLs85mwc6NdUB9iPwRIFdR4l2",
+      "uid": "THScLs85mwc6NdUB9iPwRIFdR4l2",
+      "username": "ahmedbakry",
+      "email": "ahmedbakry@masry.club",
+      "role": "user",
+      "avatar": "https://ui-avatars.com/api/?name=%D8%A7%D8%AD%D9%85%D8%AF&background=random&color=ffffff&background=10b981",
+      "name": "احمد",
+      "joinDate": "2026",
+      "bio": "مشجع جديد في عائلة النادي المصري - النسور الخضراء",
+      "tier": "new",
+      "stats": {
+        "favorites": 0,
+        "predictions": 0,
+        "comments": 0
+      },
+      "lastActive": "2026-06-18T17:55:52.036Z"
+    },
+    {
+      "id": "iaayWCLHQUcds0xthsZsdE2aV1n1",
+      "stats": {
+        "predictions": 0,
+        "favorites": 0,
+        "comments": 0
+      },
+      "name": "omar maged",
+      "avatar": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781777571/profile_avatars/fzklq9unwa3qytuuzrat.jpg",
+      "roles": [],
+      "bio": "مبرمج تطبيقات ",
+      "lastActive": "2026-06-19T20:52:44.214Z",
+      "username": "itthadalexchannel2",
+      "location": "بورسعيد، مصر",
+      "joinDate": "2026",
+      "role": "admin",
+      "email": "itthadalexchannel2@gmail.com",
+      "uid": "iaayWCLHQUcds0xthsZsdE2aV1n1",
+      "tier": "premium"
+    },
+    {
+      "id": "ujgPxCteJyNQOOSOyF1RI2OG9fh1",
+      "email": "Solimanmedia@outlook.com",
+      "uid": "ujgPxCteJyNQOOSOyF1RI2OG9fh1",
+      "bio": "مشجع جديد في عائلة النادي المصري - النسور الخضراء",
+      "role": "admin",
+      "avatar": "https://ui-avatars.com/api/?name=Soli&background=random&color=ffffff&background=10b981",
+      "username": "soli",
+      "stats": {
+        "predictions": 0,
+        "favorites": 0,
+        "comments": 0
+      },
+      "tier": "premium",
+      "name": "Soli",
+      "roles": [
+        "admin",
+        "store_editor",
+        "matches_editor",
+        "media_editor",
+        "news_editor"
+      ],
+      "lastActive": "2026-06-19T12:18:52.934Z",
+      "joinDate": "2026"
+    }
+  ],
+  "news": [
+    {
+      "id": "7YHu8RBnSVfEnJgJkTwD",
+      "content": "دخل مسؤولي النادي المصري في مفاوضات متقدمة لضم   اللاعب مودي ناصر -٢٤ عام- نجم نادي انبي السابق في صفقة انتقال حر لمدة موسمين ،عقد اللاعب جلسة مع مسؤولي الفريق الساحلي وتم الاتفاق على كافة التفاصيل المالية \\n\\nالجدير بالذكر ان اللاعب كان وقع على عقود انضمامه لنادي الزمالك ولكن ازمة ايقاف القيد حالت دون اتمام الصفقة",
+      "image": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781812449/admin_image/n34apu8wugm77fsqtjtq.jpg",
+      "type": "manual",
+      "rssUrl": "",
+      "author": "يلا كورة",
+      "title": "المصري في مفاوضات متقدمة لضم نجم انبي",
+      "editorName": "احمد زيدان",
+      "tagIds": [
+        "2"
+      ],
+      "category": "تقارير",
+      "date": "2026-06-18T20:10:31.336Z"
+    },
+    {
+      "id": "7nsTCOCOeCEFwEXv4Iiu",
+      "image": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781779716/admin_image/tg8dpsaokopiehq7hmam.jpg",
+      "title": "أسامة الزمراوى يودع المصرى برسالة مؤثرة بعد انتهاء إعارته",
+      "tagIds": [
+        "1",
+        "2"
+      ],
+      "date": "2026-06-16T17:09:10.107Z",
+      "category": "تقارير",
+      "editorName": "أسماءا عمر",
+      "type": "manual",
+      "content": "\\nودع المغربي أسامة الزمراوي لاعب الوداد المغربي المنتهية إعارته إلى النادي المصري عقب نهاية الموسم، جماهير الفريق البورسعيدي برسالة مؤثرة قبل عودته إلى فريقه المغربي.\\nرسالة أسامة الزمراوي إلى النادي المصري وجماهيره\\nوكتب الزمراوي عبر حسابه الشخصي على إنستجرام: بعد نهاية فترة إعارتي مع النادي المصري، أود أن أتقدم بخالص الشكر والتقدير لكل مكونات هذا النادي العريق، كانت ستة أشهر مليئة بالتحديات والعمل الجاد واللحظات الجميلة، عشت خلالها تجربة استثنائية على المستويين الرياضي والإنساني، منذ انضمامي للفريق وجدت كل الدعم والترحيب من الإدارة والطاقم التقني وزملائي اللاعبين، وهو ما ساعدني على تقديم أفضل ما لدي داخل الملعب.\\n\\nوأضاف أسامة الزمراوي: أشعر بفخر كبير كوني كنت جزءاً من هذه المجموعة التي نجعت في تحقيق لقب كأس عاصمة مصر، وهو إنجاز جاء ثمرة تضحيات وعمل جماعي وروح قتالية عالية من الجميع.\\n\\nواختتم: أتوجه بالشكر إلى جماهير النادي المصري الوفية على دعمها ومساندتها الدائمة، كما أتمنى للنادي المزيد من النجاحات والألقاب في المستقبل، أغادر اليوم وأنا أحمل معى ذكريات جميلة وعلاقات مميزة وتجربة ستبقى محفورة في مسيرتي الكروية، شكراً النادي المصرى، وشكراً لل من كان جزءاً من هذه الرحلة.\\n",
+      "rssUrl": "",
+      "author": "اليوم السابع"
+    },
+    {
+      "id": "JjNuA2g5ZGYsFTONg7QJ",
+      "type": "manual",
+      "date": "2026-06-16T17:09:41.373Z",
+      "tagIds": [
+        "1"
+      ],
+      "image": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781779548/admin_image/ncbqf74fa52x1mcptr0w.jpg",
+      "rssUrl": "",
+      "title": "عماد النحاس يحدد مراكز التدعيم استعداداً لموسم الانتقالات",
+      "content": "بدأ الجهاز الفني لفريق الكرة الأول بالنادي المصري، بقيادة عماد النحاس، في تحديد المراكز التي تحتاج إلى تدعيمات خلال فترة الانتقالات الصيفية المقبلة، وذلك استعداداً للموسم الجديد.\\n\\nللمزيد من أخبار كأس العالم 2026 اضغط هنا..\\n\\n \\n\\nالمصري يجدد تعاقده مع عماد النحاس\\nوأتم مجلس إدارة النادي المصري برئاسة كامل أبو علي، إجراءات تجديد التعاقد مع عماد النحاس وذلك لتولي مهام الإدارة الفنية للفريق الأول للكرة بالنادي بعقد يمتد حتى نهاية الموسم  المقبل 2027/2026.\\n\\n \\n\\nالمصرى ثالث نادٍ يتوج بلقب كأس عاصمة مصر بعد سيراميكا ومودرن سبورت\\nحصل فريق المصرى البورسعيدى على لقب كأس عاصمة مصر لأول مرة في تاريخه، بعد الفوز على إنبى بثلاثية نظيفة، في المباراة، التي جمعتهما باستاد السويس، في إطار منافسات المباراة النهائية لبطولة كأس عاصمة مصر.\\n\\n \\n\\nالمصرى البطل الثالث\\nوأصبح فريق المصرى ثالث الأندية التي تتوج بلقب كأس عاصمة مصر، بعد كل من مودرن سبورت وسيراميكا \\\"3 ألقاب\\\".\\n\\nوكان مودرن سبورت قد توج بالنسخة الأولى عام 2022، قبل أن يفرض سيراميكا هيمنته على البطولة بحصد ألقاب أعوام 2023 و2024 و2025 على التوالي.\\n\\n \\n\\nسجل أبطال كأس عاصمة مصر\\n* 2022: مودرن سبورت\\n* 2023: سيراميكا\\n* 2024: سيراميكا\\n* 2025: سيراميكا\\n* 2026 المصرى\\n\\n \\n\\nالمصرى ضد إنبى\\nنجح فريق المصرى في تحقيق فوز كبير على فريق إنبى بثلاثة أهداف نظيفة، في المباراة التي جمعتهما على استاد السويس، في إطار منافسات المباراة النهائية لبطولة كأس عاصمة مصر.",
+      "editorName": "أسماء عمر",
+      "category": "تقارير",
+      "author": "اليوم السابع"
+    }
+  ],
+  "matches": [
+    {
+      "id": "UGBkXRDLPATWHtEskaXn",
+      "awayTeam": "انبي",
+      "awayScore": "0",
+      "homeTeam": "المصري البورسعيدي",
+      "stadiumOpacity": 0.2,
+      "date": "2026-09-16T17:07:00.000Z",
+      "homeScore": "3",
+      "stadium": "ستاد السويس  ",
+      "stadiumImage": "",
+      "homeLogo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781629212/admin_logo/nklm6vk4h75zrdffzfyp.png",
+      "awayLogo": "https://play-lh.googleusercontent.com/o0b_QKz8rt1r_246RFBRxGWJ93G0J7xmdlJF0_FNWK6yEyoro1CSirXOukGhxpReZeQ",
+      "updatedAt": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1781629679,
+        "nanoseconds": 728000000
+      },
+      "timerBaseMinute": 0,
+      "isTimerRunning": true,
+      "competition": "نهائى كاس عاصمة مصر",
+      "timerStartTime": "2026-06-16T17:08:28.670Z",
+      "featured": true,
+      "sport": "football",
+      "status": "finished",
+      "isMatchDay": true
+    },
+    {
+      "id": "iWlAoaiuHF4y4q07tmAY",
+      "time": "20:00",
+      "isMatchDay": false,
+      "status": "finished",
+      "featured": false,
+      "sport": "football",
+      "timerStartTime": "2026-06-18T11:10:35.933Z",
+      "timerBaseMinute": 0,
+      "competition": "كاس عاصمة مصرر",
+      "isTimerRunning": true,
+      "updatedAt": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1781781036,
+        "nanoseconds": 581000000
+      },
+      "stadiumImage": "",
+      "homeLogo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKfLUOCWHnk_th48K0wEupNlFwUJWZvLVl1w&s",
+      "awayLogo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpyswwwQZ8hsIZ8tAzGhqiE0QQTX0IX7dbAQ&s",
+      "homeScore": "6",
+      "stadium": "ستاد برج العرب",
+      "createdAt": "2026-06-18T11:10:35.906Z",
+      "date": "2026-05-20",
+      "homeTeam": "المصري",
+      "stadiumOpacity": 0.2,
+      "awayScore": "5",
+      "channel": "OnTime Sports",
+      "awayTeam": "زد"
+    },
+    {
+      "id": "qs3QAdoUxFpgKBBWzxWf",
+      "timerStartTime": "2026-06-18T11:22:11.208Z",
+      "sport": "football",
+      "date": "2026-07-16T00:00:00.000Z",
+      "channel": "OnTime Sports",
+      "timerBaseMinute": 0,
+      "homeScore": "-",
+      "stadiumImage": "",
+      "stadiumOpacity": 0.2,
+      "isTimerRunning": true,
+      "createdAt": "2026-06-18T11:21:51.246Z",
+      "awayScore": "-",
+      "isMatchDay": false,
+      "updatedAt": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1781781731,
+        "nanoseconds": 657000000
+      },
+      "featured": true,
+      "status": "upcoming",
+      "time": "20:00",
+      "stadium": "الامارات",
+      "awayLogo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781801177/admin_logo/sd8rf7j78zeeaa0ibtf7.png",
+      "homeTeam": "المصري البورسعيدي",
+      "competition": "كاس السوبر المصري",
+      "homeLogo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781629212/admin_logo/nklm6vk4h75zrdffzfyp.png",
+      "awayTeam": "الزمالك"
+    }
+  ],
+  "clubs": [
+    {
+      "id": "0pRqViDocEBfx5y0FCgk",
+      "logo": "",
+      "name": "بيراميدز"
+    },
+    {
+      "id": "3det4QUOhe46IaX1yCCN",
+      "logo": "",
+      "name": "الإسماعيلي"
+    },
+    {
+      "id": "4jcOBUPJLHwXUVURIUa8",
+      "logo": "",
+      "name": "إنبي"
+    },
+    {
+      "id": "86qbmtXCcNxZ7uUNqLq9",
+      "name": "زد إف سي",
+      "logo": ""
+    },
+    {
+      "id": "B0rxSGyz7qfJIv9VgsHQ",
+      "logo": "",
+      "name": "سيراميكا كليوباترا"
+    },
+    {
+      "id": "DIUXoNvzP7iWaCPHeu2x",
+      "name": "حرس الحدود",
+      "logo": ""
+    },
+    {
+      "id": "ECK7mIdeT2j8HD527iGa",
+      "name": "زد",
+      "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpyswwwQZ8hsIZ8tAzGhqiE0QQTX0IX7dbAQ&s"
+    },
+    {
+      "id": "Okod1WqbUaUYGgEp287l",
+      "logo": "",
+      "name": "مودرن سبورت"
+    },
+    {
+      "id": "RkU21SyBlnJ0Lmu6bf1s",
+      "name": "انبي",
+      "logo": "https://play-lh.googleusercontent.com/o0b_QKz8rt1r_246RFBRxGWJ93G0J7xmdlJF0_FNWK6yEyoro1CSirXOukGhxpReZeQ"
+    },
+    {
+      "id": "Rp9ScCDfRYYYf8ZmV6Dk",
+      "name": "فاركو",
+      "logo": ""
+    },
+    {
+      "id": "UTb6PlIMKYCIPQ6upZo3",
+      "logo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781629212/admin_logo/nklm6vk4h75zrdffzfyp.png",
+      "name": "المصري "
+    },
+    {
+      "id": "a0zUNCeLLsUTETpjQruU",
+      "logo": "",
+      "name": "سموحة"
+    },
+    {
+      "id": "aEJmVORMFHz8AahpPDJ4",
+      "logo": "",
+      "name": "كهرباء الإسماعيلية"
+    },
+    {
+      "id": "aLDYJMWB1eDm5yHS2Tel",
+      "name": "الزمالك",
+      "logo": ""
+    },
+    {
+      "id": "dHfW3whavaSVejDTBGo7",
+      "logo": "",
+      "name": "البنك الأهلي"
+    },
+    {
+      "id": "hAqBDu6z6f6GauJUNadh",
+      "name": "وادي دجلة",
+      "logo": ""
+    },
+    {
+      "id": "jvmflZS72ZMQPN6zUrTW",
+      "logo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781806903/admin_logo/tt42a0d4odkw3pelers3.png",
+      "name": "الزمالك"
+    },
+    {
+      "id": "kOBG1r1nQC8O1MBkprob",
+      "logo": "",
+      "name": "طلائع الجيش"
+    },
+    {
+      "id": "lmDm9JJiCoAJ5UtFraeZ",
+      "logo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781629220/admin_logo/ybb0sda575kttq6ekuli.png",
+      "name": "الاتحاد السكندري"
+    },
+    {
+      "id": "rWXYkQAtQPVmrGZvl3QT",
+      "name": "الجونة",
+      "logo": ""
+    },
+    {
+      "id": "rvhdmITfmtvZZiYgRAeR",
+      "logo": "https://play-lh.googleusercontent.com/o0b_QKz8rt1r_246RFBRxGWJ93G0J7xmdlJF0_FNWK6yEyoro1CSirXOukGhxpReZeQ",
+      "name": "انبي"
+    },
+    {
+      "id": "sR2xCPYe8KxG0eowV33Z",
+      "name": "المقاولون العرب",
+      "logo": ""
+    },
+    {
+      "id": "x18Ad0nBKM90efaQ7Xkv",
+      "logo": "",
+      "name": "الأهلي"
+    },
+    {
+      "id": "xVql5TDkcPPjFnBZ6px2",
+      "logo": "",
+      "name": "بتروجت"
+    }
+  ],
+  "polls": [],
+  "predictions": [
+    {
+      "id": "b4p2G7KcwFvi0pV2rLAz",
+      "awayScore": 0,
+      "createdAt": "2026-06-18T23:29:42.227Z",
+      "userName": "Soli",
+      "userId": "ujgPxCteJyNQOOSOyF1RI2OG9fh1",
+      "homeScore": 3,
+      "userEmail": "solimanmedia@outlook.com",
+      "matchId": "qs3QAdoUxFpgKBBWzxWf"
+    }
+  ],
+  "fan_posts": [],
+  "media": [
+    {
+      "id": "Zqm5anwQGPZL7FYJOVrR",
+      "views": "0",
+      "videoUrl": "https://www.youtube.com/watch?v=Fpd_5jibK24",
+      "thumbnailUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8Q0M90BdZW69tyhXbi9x6V3ZKd8oAM9_kbA&s",
+      "type": "video",
+      "title": " مراسم تسليم كأس عاصمة مصر للنادي المصري | نهائي كأس عاصمة مصر - 2025-2026",
+      "playlistId": "",
+      "duration": "",
+      "likes": [],
+      "source": "upload",
+      "date": "2026-06-18T10:57:46.427Z",
+      "url": "https://www.youtube.com/watch?v=Fpd_5jibK24"
+    },
+    {
+      "id": "fxIQVJS0sEP7GQvux850",
+      "type": "video",
+      "views": "3500",
+      "videoUrl": "https://www.youtube.com/watch?v=3mZTEp4-KVk",
+      "thumbnailUrl": "https://img.youtube.com/vi/3mZTEp4-KVk/mqdefault.jpg",
+      "duration": "12:00",
+      "likes": [],
+      "source": "youtube",
+      "date": "2026-06-16T17:13:00.297Z",
+      "url": "https://www.youtube.com/watch?v=3mZTEp4-KVk",
+      "title": " أهداف مباراة | المصري - إنبي | 0/3 | في نهائي كأس عاصمة مصر",
+      "playlistId": ""
+    },
+    {
+      "id": "zHgBqZVfmkCutSzoiaES",
+      "views": "0",
+      "videoUrl": "",
+      "thumbnailUrl": "https://img.youm7.com/large/202606090858505850_12610.jpg",
+      "type": "photo",
+      "title": "ابطال كاس عاصمة مصر ٢٠٢٦",
+      "playlistId": "",
+      "duration": "",
+      "likes": [],
+      "source": "upload",
+      "url": "https://img.youm7.com/large/202606090858505850_12610.jpg",
+      "date": "2026-06-18T11:07:28.700Z"
+    }
+  ],
+  "live_comments": [
+    {
+      "id": "0mgDA8ltUWJ6JhfdykAF",
+      "text": "خبر تجربه 2خبر تجربه 2خبر تجربه 2",
+      "userId": "iaayWCLHQUcds0xthsZsdE2aV1n1",
+      "createdAt": {
+        "type": "firestore/timestamp/1.0",
+        "seconds": 1781629894,
+        "nanoseconds": 305000000
+      },
+      "userAvatar": "https://ui-avatars.com/api/?name=omar%20maged&background=random&color=ffffff&background=10b981",
+      "userName": "omar maged"
+    }
+  ],
+  "fan_comments": [],
+  "city_info": [],
+  "settings": [
+    {
+      "id": "featured_match",
+      "matchId": null
+    },
+    {
+      "id": "global",
+      "appName": "قناة النادي المصري ",
+      "appLogo": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781630525/admin_appLogo/jeavelwtjltwn2bjr7a1.png",
+      "logoText": "قناة النادي المصري ",
+      "headerLogoDark": "",
+      "defaultSport": "football",
+      "logoType": "text",
+      "headerLogoLight": ""
+    },
+    {
+      "id": "homeLayout",
+      "sections": [
+        {
+          "order": 0.5,
+          "type": "hero",
+          "active": true,
+          "id": "hero"
+        },
+        {
+          "title": "المدينة الباسلة",
+          "active": true,
+          "type": "city",
+          "order": 0,
+          "id": "city"
+        },
+        {
+          "id": "ads",
+          "active": true,
+          "order": 1,
+          "type": "ads"
+        },
+        {
+          "id": "matches",
+          "order": 1.2,
+          "type": "matches",
+          "active": true
+        },
+        {
+          "active": true,
+          "order": 1.5,
+          "type": "ai_banner",
+          "id": "ai_banner"
+        },
+        {
+          "order": 2,
+          "type": "news",
+          "active": true,
+          "id": "news"
+        },
+        {
+          "type": "media",
+          "order": 3,
+          "active": true,
+          "id": "media"
+        },
+        {
+          "id": "polls",
+          "active": true,
+          "order": 4,
+          "type": "polls"
+        },
+        {
+          "id": "history",
+          "active": true,
+          "order": 5,
+          "type": "history"
+        },
+        {
+          "active": true,
+          "spacing": 16,
+          "pinned": false,
+          "order": 7,
+          "type": "matches",
+          "id": "d918f3cb-e359-417e-8eae-7d8375991a91"
+        }
+      ]
+    }
+  ],
+  "fcm_tokens": [],
+  "match_day_moments": [],
+  "match_day_attendance": [],
+  "ads": [],
+  "club_titles": [
+    {
+      "id": "o8f9sTC6mWm8WRCCqCB5",
+      "count": 1,
+      "icon": "trophy",
+      "category": "football",
+      "hidden": false,
+      "name": "كأس عاصمة مصر "
+    }
+  ],
+  "club_stats": [],
+  "club_timeline": [],
+  "club_stadiums": [
+    {
+      "id": "HLtln3fBwmUo3BuSydG6",
+      "type": "الملعب الجديد",
+      "imageUrl": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781807390/admin_imageUrl/c6gqi70ndprbwvy8sx4u.jpg",
+      "name": "إستاد بورسعيد الجديد",
+      "desc": "إستاد بورسعيد الجديد تم بناؤه 2024",
+      "hidden": false
+    }
+  ],
+  "songs": [],
+  "albums": [],
+  "playlists": [],
+  "books": [],
+  "news_categories": [],
+  "products": [
+    {
+      "id": "OYWCIAfHtDVrF5spPFRF",
+      "stock": 0,
+      "imageUrl": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781630277/admin_imageUrl/lbsgbn7dr4kslt91b5oa.jpg",
+      "name": "تيشيرت المصري البورسعيدي 2026 - ابيض",
+      "price": 100,
+      "category": "tshirt",
+      "description": "تيشيرت المصري البورسعيدي 2026 ابيض "
+    },
+    {
+      "id": "iXIRyTuP90Xw9quGfDUM",
+      "price": 100,
+      "category": "tshirt",
+      "name": "تيشيرت المصري البورسعيدي 2026 - أخضر ",
+      "stock": 0,
+      "imageUrl": "https://res.cloudinary.com/dqj6gzwfg/image/upload/v1781630262/admin_imageUrl/p9twknehbmt16txxau5u.jpg",
+      "description": "تيشيرت المصري البورسعيدي"
+    }
+  ],
+  "orders": [],
+  "home_sections": [],
+  "notifications": [],
+  "bookmarks": []
+}
