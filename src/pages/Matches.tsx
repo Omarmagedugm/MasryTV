@@ -237,7 +237,7 @@ export default function Matches() {
                       <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-primary-light/20 pointer-events-none"></div>
                       
                       <div className="relative p-6">
-                        <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center justify-between mb-8" dir="rtl">
                           <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-xl text-[9px] font-black text-white ring-1 ring-white/20 uppercase tracking-widest">
                             <Trophy size={10} className="text-accent" />
                             {section.newestMatch.competition}
@@ -344,7 +344,7 @@ export default function Matches() {
                         <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-red-500 to-orange-500 animate-pulse rounded-t-full"></div>
                       )}
                       
-                      <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center justify-between mb-8" dir="rtl">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-white/5 rounded-xl text-[9px] font-black text-slate-500 uppercase tracking-tighter">
                             <Trophy size={12} className="text-primary-light" />
