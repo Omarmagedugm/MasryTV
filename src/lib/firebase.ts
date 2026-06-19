@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persistentMultipleTabManager, persistentSingleTabManager } from 'firebase/firestore';
+import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import firebaseConfigJson from '../../firebase-applet-config.json';
@@ -107,43 +107,13 @@ console.log('Firebase Configuration Check:', {
 
 const app = initializeApp(firebaseConfig);
 
-// Detect if running inside an iframe or if third-party storage is restricted
-const isIframe = typeof window !== 'undefined' && (window.self !== window.top);
-const canUseStorage = (() => {
-  try {
-    if (typeof window === 'undefined') return false;
-    localStorage.setItem('__test_ls', '1');
-    localStorage.removeItem('__test_ls');
-    return true;
-  } catch (e) {
-    return false;
-  }
-})();
-
-const firestoreSettings: any = {
+// Using initializeFirestore with persistent local cache and experimental settings to improve connectivity in restricted environments
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  }),
   experimentalForceLongPolling: true,
-};
-
-if (!isIframe && canUseStorage) {
-  try {
-    firestoreSettings.localCache = persistentLocalCache({
-      tabManager: persistentMultipleTabManager()
-    });
-  } catch (e) {
-    console.warn("Failed to initialize persistentMultipleTabManager:", e);
-  }
-} else if (canUseStorage) {
-  try {
-    // Falls back to single tab cache when inside iframe sandbox to avoid broadcast lock issues
-    firestoreSettings.localCache = persistentLocalCache({
-      tabManager: persistentSingleTabManager({})
-    });
-  } catch (e) {
-    console.warn("Failed to initialize persistentSingleTabManager inside sandbox:", e);
-  }
-}
-
-export const db = initializeFirestore(app, firestoreSettings, firebaseConfig.firestoreDatabaseId || '(default)');
+}, firebaseConfig.firestoreDatabaseId || '(default)');
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);

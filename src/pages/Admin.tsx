@@ -384,6 +384,11 @@ export default function Admin() {
   const [mediaSubTab, setMediaSubTab] = useState<'items' | 'playlists'>('items');
   const [musicSubTab, setMusicSubTab] = useState<'songs' | 'albums' | 'playlists'>('songs');
   const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0, currentCollection: '' });
+  const [parsedBackupData, setParsedBackupData] = useState<any | null>(null);
+  const [showImportOptions, setShowImportOptions] = useState(false);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(20));
@@ -451,6 +456,115 @@ export default function Admin() {
       toast.error('فشل في إنشاء النسخة الاحتياطية');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        const keys = Object.keys(json);
+        const isValid = keys.length > 0 && keys.every(k => Array.isArray(json[k]));
+        
+        if (!isValid) {
+          toast.error('الملف غير متوافق. تأكد من رفعه من خيار تحميل النسخة الاحتياطية.');
+          return;
+        }
+        
+        setParsedBackupData(json);
+        setShowImportOptions(true);
+      } catch (err) {
+        toast.error('فشل في قراءة ملف الـ JSON. تأكد من أن الملف صحيح.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleImportDatabase = async (mode: 'merge' | 'overwrite') => {
+    if (!parsedBackupData) return;
+    
+    const collectionsInBackup = Object.keys(parsedBackupData);
+    let totalItems = 0;
+    collectionsInBackup.forEach((colName) => {
+      if (Array.isArray(parsedBackupData[colName])) {
+        totalItems += parsedBackupData[colName].length;
+      }
+    });
+
+    if (totalItems === 0) {
+      toast.error('النسخة الاحتياطية فارغة أو فارغة من السجلات.');
+      return;
+    }
+
+    const confirmMsg = mode === 'overwrite' 
+      ? `تحذير: لقد اخترت "مسح كلي واستعادة". سيؤدي ذلك لمسح كافة السجلات الحالية في مجموعات البيانات المتأثرة (${collectionsInBackup.join(', ')}) واستبدالها بالبيانات الموجودة في الملف. هل أنت متأكد؟`
+      : 'هل أنت متأكد من رغبتك في دمج السجلات الحالية بالنسخة الاحتياطية؟ سيؤدي ذلك لإضافة السجلات الجديدة وتحديث المكررة.';
+
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsImporting(true);
+    setImportProgress({ total: totalItems, current: 0, currentCollection: '' });
+    
+    try {
+      let completedOps = 0;
+      
+      for (const colName of collectionsInBackup) {
+        const items = parsedBackupData[colName];
+        if (!Array.isArray(items)) continue;
+        
+        setImportProgress(prev => ({
+          ...prev,
+          currentCollection: colName
+        }));
+
+        // If mode is overwrite, delete existing documents in this collection
+        if (mode === 'overwrite') {
+          try {
+            const existingSnap = await getDocs(collection(db, colName));
+            for (const existingDoc of existingSnap.docs) {
+              await deleteDoc(doc(db, colName, existingDoc.id));
+            }
+          } catch (err) {
+            console.warn(`Error clearing collection ${colName}:`, err);
+          }
+        }
+        
+        // Write backup documents
+        for (const item of items) {
+          const { id, ...docData } = item;
+          if (!id) continue;
+          
+          try {
+            await setDoc(doc(db, colName, id), docData);
+          } catch (err) {
+            console.error(`Error importing doc ${id} in ${colName}:`, err);
+          }
+          
+          completedOps++;
+          setImportProgress(prev => ({
+            ...prev,
+            current: completedOps,
+            total: totalItems
+          }));
+        }
+      }
+      
+      toast.success('تمت استعادة النسخة الاحتياطية بنجاح! سيتم إعادة تحميل التطبيق لتطبيق التغييرات.');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error: any) {
+      console.error('Import error:', error);
+      toast.error('حدث خطأ أثناء استيراد البيانات: ' + (error?.message || String(error)));
+    } finally {
+      setIsImporting(false);
+      setParsedBackupData(null);
+      setShowImportOptions(false);
     }
   };
 
@@ -1438,54 +1552,56 @@ export default function Admin() {
   useEffect(() => {
     // Auto-seed history if empty
     const seedHistory = async () => {
-      try {
-        const statsSnap = await getDocs(collection(db, 'club_stats'));
-        if (statsSnap.empty) {
-          console.log('Seeding initial club_stats data...');
+      // Check if all history collections are empty to avoid partial seeding
+      // We use a local check to avoid double-seeding if the state hasn't updated yet
+      const isSeededKey = 'history_data_seeded_v1';
+      if (localStorage.getItem(isSeededKey)) return;
+
+      if (clubStats.length === 0 && clubTitles.length === 0 && historyEvents.length === 0 && stadiums.length === 0) {
+        console.log('Seeding initial history data...');
+        try {
+          // Double check with a real server fetch to be absolutely sure
+          const statsSnap = await getDocs(collection(db, 'club_stats'));
+          if (!statsSnap.empty) {
+            localStorage.setItem(isSeededKey, 'true');
+            return;
+          }
+
           const stats = [
-            { label: 'سنة مرت', value: 106, icon: 'calendar', hidden: false },
-            { label: 'كأس مصر', value: 1, icon: 'trophy', hidden: false },
-            { label: 'دوري القنال', value: 17, icon: 'shield', hidden: false },
-            { label: 'كأس السلطان', value: 3, icon: 'award', hidden: false },
+            { label: 'سنة مرت', value: 120, icon: 'calendar' },
+            { label: 'كأس مصر', value: 1, icon: 'trophy' },
+            { label: 'دوري القنال', value: 17, icon: 'shield' },
+            { label: 'كأس السلطان', value: 3, icon: 'award' },
           ];
           for (const s of stats) await addDoc(collection(db, 'club_stats'), s);
-        }
 
-        const titlesSnap = await getDocs(collection(db, 'club_titles'));
-        if (titlesSnap.empty) {
-          console.log('Seeding initial club_titles data...');
           const titles = [
-            { name: 'كأس مصر', count: 1, icon: 'trophy', category: 'football', hidden: false },
-            { name: 'دوري منطقة القنال', count: 17, icon: 'shield', category: 'football', hidden: false },
-            { name: 'كأس السلطان حسين', count: 3, icon: 'star', category: 'football', hidden: false },
-            { name: 'المركز الثالث بالدوري', count: 2, icon: 'star', category: 'football', hidden: false },
+            { name: 'كأس مصر', count: 1, icon: 'trophy', category: 'football' },
+            { name: 'دوري منطقة القنال', count: 17, icon: 'shield', category: 'football' },
+            { name: 'كأس السلطان حسين', count: 3, icon: 'star', category: 'football' },
+            { name: 'المركز الثالث بالدوري', count: 2, icon: 'star', category: 'football' },
           ];
           for (const t of titles) await addDoc(collection(db, 'club_titles'), t);
-        }
 
-        const timelineSnap = await getDocs(collection(db, 'club_timeline'));
-        if (timelineSnap.empty) {
-          console.log('Seeding initial club_timeline data...');
           const timeline = [
-            { year: '1920', title: 'تأسيس النادي', desc: 'تأسس النادي المصري البورسعيدي ليكون أول نادٍ للمصريين في منطقة القنال لمواجهة أندية الأجانب.', hidden: false },
-            { year: '1923', title: 'كأس السلطان حسين', desc: 'المصري يحقق أولى بطولاته الرسمية بالفوز بكأس السلطان حسين.', hidden: false },
-            { year: '1948', title: 'الدوري الممتاز', desc: 'المصري يشارك في أول نسخة للدوري المصري الممتاز لكرة القدم.', hidden: false },
-            { year: '1998', title: 'كأس مصر التاريخي', desc: 'المصري يحصد لقب كأس مصر بعد فوز تاريخي على المقاولون العرب في النهائي.', hidden: false },
-            { year: '2020', title: 'مئوية النادي', desc: 'الاحتفال بمرور 100 عام على تأسيس قلعة النسور الخضراء.', hidden: false },
+            { year: '1920', title: 'تأسيس النادي', desc: 'تأسس النادي المصري البورسعيدي ليكون أول نادٍ للمصريين في منطقة القنال لمواجهة أندية الأجانب.' },
+            { year: '1923', title: 'كأس السلطان حسين', desc: 'المصري يحقق أولى بطولاته الرسمية بالفوز بكأس السلطان حسين.' },
+            { year: '1948', title: 'الدوري الممتاز', desc: 'المصري يشارك في أول نسخة للدوري المصري الممتاز لكرة القدم.' },
+            { year: '1998', title: 'كأس مصر التاريخي', desc: 'المصري يحصد لقب كأس مصر بعد فوز تاريخي على المقاولون العرب في النهائي.' },
+            { year: '2020', title: 'مئوية النادي', desc: 'الاحتفال بمرور 100 عام على تأسيس قلعة النسور الخضراء.' },
           ];
           for (const ev of timeline) await addDoc(collection(db, 'club_timeline'), ev);
-        }
 
-        const stadiumsSnap = await getDocs(collection(db, 'club_stadiums'));
-        if (stadiumsSnap.empty) {
-          console.log('Seeding initial club_stadiums data...');
           const stadiumsList = [
-            { name: 'إستاد بورسعيد', type: 'الملعب الرئيسي', desc: 'الملعب التاريخي للنادي المصري في قلب مدينة بورسعيد الباسلة.', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80', hidden: false },
+            { name: 'إستاد بورسعيد', type: 'الملعب الرئيسي', desc: 'الملعب التاريخي للنادي المصري في قلب مدينة بورسعيد الباسلة.', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80' },
           ];
           for (const st of stadiumsList) await addDoc(collection(db, 'club_stadiums'), st);
+
+          console.log('Seeding complete.');
+          localStorage.setItem(isSeededKey, 'true');
+        } catch (error) {
+          console.error('Error auto-seeding history:', error);
         }
-      } catch (error) {
-        console.error('Error auto-seeding history:', error);
       }
     };
     seedHistory();
@@ -3228,28 +3344,53 @@ export default function Admin() {
           )}
 
           {activeTab === 'backup' && (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6" dir="rtl">
               <div className="flex flex-col text-right px-2">
                 <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase italic tracking-tight">إدارة النظام والنسخ الاحتياطي</h3>
                 <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">System Maintenance & Data Management</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white dark:bg-card-dark p-6 rounded-3xl border border-border-light dark:border-border-dark flex flex-col items-center text-center">
                    <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 mb-4">
                       <Database size={28} />
                    </div>
                    <h4 className="text-sm font-black mb-1">نسخة احتياطية كاملة</h4>
                    <p className="text-[10px] font-bold text-slate-500 mb-6 leading-relaxed">
-                     تحميل ملف JSON يحتوي على كافة بيانات التطبيق من Firestore
+                     تحميل ملف JSON يحتوي على كافة بيانات التطبيق من Firestore محلياً
                    </p>
                    <button 
                     onClick={handleExportDatabase}
                     disabled={isExporting}
-                    className="w-full py-3 bg-blue-500 text-white rounded-xl font-black text-[10px] flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors disabled:opacity-50"
+                    className="w-full py-3 bg-blue-500 text-white rounded-xl font-black text-[10px] flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors disabled:opacity-50 cursor-pointer"
                    >
                      {isExporting ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
                      تحميل النسخة الآن
+                   </button>
+                </div>
+
+                <div className="bg-white dark:bg-card-dark p-6 rounded-3xl border border-border-light dark:border-border-dark flex flex-col items-center text-center">
+                   <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-4">
+                      <Database size={28} />
+                   </div>
+                   <h4 className="text-sm font-black mb-1">استعادة نسخة احتياطية</h4>
+                   <p className="text-[10px] font-bold text-slate-500 mb-6 leading-relaxed">
+                     رفع ملف JSON الخاص بالنسخة الاحتياطية واستعادة قاعدة البيانات بالكامل
+                   </p>
+                   <input 
+                     type="file" 
+                     ref={importFileInputRef}
+                     onChange={handleFileChange}
+                     accept=".json"
+                     className="hidden" 
+                   />
+                   <button 
+                    onClick={() => importFileInputRef.current?.click()}
+                    disabled={isImporting}
+                    className="w-full py-3 bg-emerald-500 text-white rounded-xl font-black text-[10px] flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors disabled:opacity-50 cursor-pointer"
+                   >
+                     {isImporting ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                     رفع واستعادة النسخة
                    </button>
                 </div>
 
@@ -3279,10 +3420,80 @@ export default function Admin() {
                 <div>
                    <h5 className="font-black text-amber-800 dark:text-amber-500 text-[10px] mb-0.5">تنبيه أمني</h5>
                    <p className="text-[9px] font-bold text-amber-700 dark:text-amber-400 leading-relaxed">
-                     النسخة الاحتياطية تحتوي على بيانات حساسة. يرجى الحفاظ على الملف في مكان آمن وعدم مشاركته مع أطراف غير مصرح لها.
+                     الاستعادة الكاملة قد تقوم بحذف البيانات الحالية بشكل نهائي في حالة اختيار (المسح الكلي والاستعادة). تأكد من رفع ملف صحيح وحفظ نسخة احتياطية إضافية للأمان.
                    </p>
                 </div>
               </div>
+
+              {/* Import confirmation pop-up */}
+              {showImportOptions && parsedBackupData && (
+                <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                  <div className="bg-white dark:bg-card-dark rounded-3xl max-w-md w-full p-6 border border-border-light dark:border-border-dark shadow-premium text-right" dir="rtl">
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-border-light dark:border-border-dark">
+                      <h4 className="text-xs font-black text-slate-800 dark:text-white">خيارات استعادة النسخة الاحتياطية</h4>
+                      <button onClick={() => { setShowImportOptions(false); setParsedBackupData(null); }} className="text-slate-400 hover:text-slate-600 transition-colors">
+                        <X size={18} />
+                      </button>
+                    </div>
+                    
+                    <p className="text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                      تم قراءة ملف النسخة الاحتياطية بنجاح! السجلات الموجودة بالملف:
+                    </p>
+                    
+                    <div className="max-h-40 overflow-y-auto mb-6 bg-slate-50 dark:bg-surface-dark p-3 rounded-2xl border border-border-light dark:border-border-dark space-y-1">
+                      {Object.keys(parsedBackupData).map((colName) => (
+                        <div key={colName} className="flex justify-between items-center text-[10px] font-black">
+                          <span className="text-slate-500 dark:text-slate-400 capitalize">{colName}</span>
+                          <span className="text-slate-800 dark:text-white font-mono">{parsedBackupData[colName]?.length || 0} سجل</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <button 
+                        onClick={() => handleImportDatabase('merge')}
+                        className="w-full py-3 px-4 bg-blue-500 text-white rounded-xl text-[10px] font-black hover:bg-blue-600 transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <span>دمج وتحديث البيانات الحالية</span>
+                        <span className="text-[8px] bg-white/20 px-2 py-0.5 rounded-full font-bold">يحافظ على سجلاتك الحالية ويضيف الجديد</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleImportDatabase('overwrite')}
+                        className="w-full py-3 px-4 bg-red-500 text-white rounded-xl text-[10px] font-black hover:bg-red-600 transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <span>مسح كلي نظيف واستعادة كاملة</span>
+                        <span className="text-[8px] bg-white/20 px-2 py-0.5 rounded-full font-bold text-rose-100">يمسح ويكتب البيانات من جديد</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Progress Modal */}
+              {isImporting && (
+                <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+                  <div className="bg-white dark:bg-card-dark rounded-3xl max-w-sm w-full p-6 border border-border-light dark:border-border-dark shadow-premium text-center">
+                    <Loader2 className="animate-spin text-primary mx-auto mb-4" size={40} />
+                    <h4 className="text-xs font-black text-slate-800 dark:text-white mb-2">جاري استعادة البيانات...</h4>
+                    {importProgress.currentCollection && (
+                      <p className="text-[9px] text-primary font-black mb-4 uppercase">
+                        المجموعة الحالية: {importProgress.currentCollection}
+                      </p>
+                    )}
+                    <div className="w-full bg-slate-100 dark:bg-surface-dark h-2 rounded-full overflow-hidden mb-2 relative border border-border-light dark:border-border-dark">
+                      <div 
+                        className="bg-primary h-full transition-all duration-300 animate-pulse" 
+                        style={{ width: `${(importProgress.current / (importProgress.total || 1)) * 100}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-black text-slate-400">
+                      <span className="tabular-nums">{Math.round((importProgress.current / (importProgress.total || 1)) * 100)}%</span>
+                      <span className="tabular-nums">{importProgress.current} / {importProgress.total}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
