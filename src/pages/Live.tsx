@@ -206,6 +206,25 @@ export default function Live() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className={`text-[11px] font-black ${isMsgAdmin ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>{chatName}</span>
+                        {!isMsgAdmin && (
+                          (() => {
+                            const tier = chatUser?.tier || 'new';
+                            const tierMap: any = {
+                               premium: { label: 'عضو ملكي', color: 'bg-gradient-to-r from-amber-500 to-yellow-600' },
+                               diamond: { label: 'عضو ماسي', color: 'bg-cyan-500' },
+                               gold: { label: 'عضو ذهبي', color: 'bg-yellow-500' },
+                               silver: { label: 'عضو فضي', color: 'bg-slate-400' },
+                               bronze: { label: 'عضو برونزي', color: 'bg-orange-700' }
+                            };
+                            const tData = tierMap[tier];
+                            if (!tData) return null;
+                            return (
+                              <span className={`${tData.color} text-white text-[7px] font-black px-1 py-0.5 rounded-md`}>
+                                {tData.label}
+                              </span>
+                            );
+                          })()
+                        )}
                         <span className="text-[9px] text-slate-400 font-bold">
                         {msg.createdAt && formatDistanceToNow(msg.createdAt.toDate(), { locale: ar, addSuffix: true })}
                       </span>

@@ -77,6 +77,7 @@ export default function Profile() {
     silver: { label: 'عضو فضي', color: 'bg-slate-400', icon: 'stars' },
     gold: { label: 'عضو ذهبي', color: 'bg-yellow-500', icon: 'diamond' },
     diamond: { label: 'عضو ماسي', color: 'bg-cyan-400', icon: 'auto_awesome' },
+    premium: { label: 'عضو ملكي', color: 'bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500', icon: 'workspace_premium' },
   };
 
   const handleSaveProfile = async () => {
@@ -182,8 +183,11 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      localStorage.clear();
-      sessionStorage.clear();
+      // Remove only admin drafts and auth details, preserving compiled system cache (like masry-app-storage)
+      localStorage.removeItem('adminDraft_formData');
+      localStorage.removeItem('adminDraft_isEditing');
+      localStorage.removeItem('adminDraft_editingId');
+      localStorage.removeItem('adminDraft_showModal');
       navigate('/auth', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);

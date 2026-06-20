@@ -511,17 +511,7 @@ export default function Auth() {
                   الدخول بواسطة Google
                 </button>
 
-                <div className="mt-6 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                  <div className="flex items-start gap-3">
-                    <HelpCircle className="text-primary mt-0.5 shrink-0" size={16} />
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-primary mb-1">تعليمات للمطورين:</p>
-                      <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
-                        إذا واجهت خطأ "Unauthorized Domain"، يرجى نسخ عنوان الرابط (URL) الحالي وإضافته إلى قائمة "Authorized Domains" في إعدادات Authentication بـ Firebase Console.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+
               </>
             )}
           </form>

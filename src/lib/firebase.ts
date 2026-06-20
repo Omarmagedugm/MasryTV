@@ -73,6 +73,12 @@ export function handleFirestoreError(error: any, operationType: OperationType, p
   if (isQuotaExceeded) {
      console.warn("Quota Exceeded. Application degraded.");
   }
+
+  // If this is a write/mutation operation (not a read), throw the error so that callers 
+  // (like form submit handlers) are aware of the write failure and can react accordingly.
+  if (!isRead) {
+    throw new Error(errStr);
+  }
 }
 
 export function handleStorageError(error: any, path: string) {

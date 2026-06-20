@@ -989,11 +989,12 @@ export default function FanZone() {
                                 ) : (
                                   (() => {
                                     const tierMap: any = {
-                                       diamond: { label: 'Diamond', color: 'bg-cyan-500' },
-                                       gold: { label: 'Gold', color: 'bg-yellow-500' },
-                                       silver: { label: 'Silver', color: 'bg-slate-400' },
-                                       bronze: { label: 'Bronze', color: 'bg-orange-700' },
-                                       new: { label: 'Fan', color: 'bg-primary' }
+                                       premium: { label: 'عضو ملكي', color: 'bg-gradient-to-r from-amber-500 to-yellow-600' },
+                                       diamond: { label: 'عضو ماسي', color: 'bg-cyan-500' },
+                                       gold: { label: 'عضو ذهبي', color: 'bg-yellow-500' },
+                                       silver: { label: 'عضو فضي', color: 'bg-slate-400' },
+                                       bronze: { label: 'عضو برونزي', color: 'bg-orange-700' },
+                                       new: { label: 'عضو جديد', color: 'bg-primary' }
                                     };
                                     const tData = tierMap[tier] || tierMap.new;
                                     return (
@@ -1207,10 +1208,13 @@ export default function FanZone() {
                       </div>
 
                       <div className="space-y-4 max-h-80 overflow-y-auto no-scrollbar pb-2">
-                        {postComments.map((comment) => {
+                         {postComments.map((comment) => {
                           const commentUser = users.find(u => u.uid === comment.userId);
                           const displayAvatar = commentUser?.avatar || comment.userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.userId}`;
                           const displayName = commentUser?.name || comment.userName;
+                          const tier = commentUser?.tier || 'new';
+                          const role = commentUser?.role || 'user';
+                          const isCommentAdmin = role === 'admin' || comment.userId === 'omarmagedugm' || comment.userId === 'copyrightofficialco';
 
                           return (
                             <motion.div 
@@ -1222,7 +1226,33 @@ export default function FanZone() {
                               <img src={getOptimizedImage(displayAvatar, 80)} className="w-9 h-9 rounded-[14px] bg-slate-100 shrink-0 border border-border-light dark:border-border-dark shadow-sm" alt="avatar" referrerPolicy="no-referrer" />
                               <div className="flex-1 bg-slate-50 dark:bg-surface-dark p-4 rounded-[24px] border border-border-light dark:border-border-dark shadow-sm group-hover/comment:border-primary/20 transition-colors">
                                 <div className="flex items-center justify-between mb-1">
-                                  <h5 className="text-[11px] font-black text-primary uppercase tracking-tighter">{displayName}</h5>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <h5 className="text-[11px] font-black text-primary uppercase tracking-tighter">{displayName}</h5>
+                                    {isCommentAdmin ? (
+                                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 text-[8px] font-black uppercase ring-1 ring-yellow-400/30">
+                                        <ShieldCheck size={10} />
+                                        Admin
+                                      </span>
+                                    ) : (
+                                      (() => {
+                                        const tierMap: any = {
+                                           premium: { label: 'عضو ملكي', color: 'bg-gradient-to-r from-amber-500 to-yellow-600' },
+                                           diamond: { label: 'عضو ماسي', color: 'bg-cyan-500' },
+                                           gold: { label: 'عضو ذهبي', color: 'bg-yellow-500' },
+                                           silver: { label: 'عضو فضي', color: 'bg-slate-400' },
+                                           bronze: { label: 'عضو برونزي', color: 'bg-orange-700' },
+                                           new: { label: 'عضو جديد', color: 'bg-primary' }
+                                        };
+                                        const tData = tierMap[tier] || tierMap.new;
+                                        if (tier === 'new') return null; // Keep layout clean for standard users
+                                        return (
+                                          <div className={`${tData.color} text-white text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter shadow-sm flex items-center gap-0.5`}>
+                                            {tData.label}
+                                          </div>
+                                        );
+                                      })()
+                                    )}
+                                  </div>
                                 <div className="flex items-center gap-2">
                                   <button 
                                     onClick={() => handleLikeComment(post.id, comment.id)}

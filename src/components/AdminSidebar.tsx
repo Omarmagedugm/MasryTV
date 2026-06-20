@@ -170,8 +170,11 @@ export default function AdminSidebar({ activeTab, setActiveTab, onClose }: Admin
             onClick={async () => {
               try {
                 await auth.signOut();
-                localStorage.clear();
-                sessionStorage.clear();
+                // Remove only admin drafts and auth details, preserving compiled system cache (like masry-app-storage)
+                localStorage.removeItem('adminDraft_formData');
+                localStorage.removeItem('adminDraft_isEditing');
+                localStorage.removeItem('adminDraft_editingId');
+                localStorage.removeItem('adminDraft_showModal');
                 navigate('/auth', { replace: true });
               } catch (error) {
                 console.error('Logout error:', error);

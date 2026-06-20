@@ -43,6 +43,20 @@ export function useFirestoreSync() {
             updateDoc(doc(db, 'users', currentUser.uid), { role: 'admin' })
               .catch(err => console.error('Failed to auto-upgrade admin:', err));
           }
+
+          // Load members list immediately once we verify this user is an authorized admin or manager
+          const userRole = userData.role || 'user';
+          const userRoles = userData.roles || [];
+          const canAccessUsers = userRole === 'admin' || userRoles.includes('admin') || userRoles.includes('user_manager') || isBootstrap;
+          
+          if (canAccessUsers) {
+            getDocs(collection(db, 'users'))
+              .then(snap => {
+                const fetchedUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
+                setUsers(fetchedUsers);
+              })
+              .catch(err => console.error('Failed to fetch members list dynamically:', err));
+          }
         }
       }, (error) => handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`));
     }
@@ -207,28 +221,13 @@ export function useFirestoreSync() {
         fetchDoc('settings/newsCategories', d => setNewsCategories(d.list || []));
         fetchDoc('settings/newsTags', d => setNewsTags(d.tags || []));
         fetchDoc('city_info/portsaid', setCityInfo);
-        
-        // Content
+                // Content
         fetchCol('clubs', setClubs);
         fetchCol('polls', setPolls);
         fetchCol('predictions', setPredictions);
         fetchCol('products', setProducts);
         fetchCol('ads', setAds, query(collection(db, 'ads'), where('active', '==', true), orderBy('order', 'asc')));
         fetchCol('custom_pages', setCustomPages);
-        const profile = useAppStore.getState().profile;
-        const email = auth.currentUser?.email?.toLowerCase();
-        const isAdminOrManager = (profile?.role === 'admin') || 
-                                 (profile?.roles && (profile.roles.includes('admin') || profile.roles.includes('user_manager'))) ||
-                                 email === 'copyrightofficialco@gmail.com' || 
-                                 email === 'omarmagedugm@gmail.com' ||
-                                 email === 'itthadalexchannel2@gmail.com' ||
-                                 email === 'itthadalexchannel2@masry.club' ||
-                                 email?.startsWith('itthadalexchannel2@') ||
-                                 profile?.username?.toLowerCase() === 'itthadalexchannel2';
-
-        if (isAdminOrManager) {
-          fetchCol('users', setUsers);
-        }
         
       } catch (error) {
         handleFirestoreError(error, OperationType.GET, 'static_data');

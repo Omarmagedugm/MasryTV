@@ -1710,8 +1710,11 @@ export default function Admin() {
            onClick={async () => {
              try {
                await auth.signOut();
-               localStorage.clear();
-               sessionStorage.clear();
+               localStorage.removeItem('adminDraft_formData');
+                localStorage.removeItem('adminDraft_isEditing');
+                localStorage.removeItem('adminDraft_editingId');
+                localStorage.removeItem('adminDraft_showModal');
+               // sessionStorage preserved for performance
                window.location.href = '/auth';
              } catch (error) {
                console.error('Logout error:', error);
