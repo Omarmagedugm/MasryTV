@@ -75,7 +75,7 @@ export default function DigitalFanID({ username, memberId, avatarUrl }: DigitalF
               {displayId}
             </div>
           </div>
-          <div className="w-16 h-16 rounded-full border-2 shadow-xl overflow-hidden shrink-0" style={{ borderColor: '#ffffff', backgroundColor: '#f1f5f9' }}>
+          <div className="w-20 h-20 rounded-full border-2 shadow-xl overflow-hidden shrink-0" style={{ borderColor: '#ffffff', backgroundColor: '#f1f5f9' }}>
             <img 
               src={avatarUrl} 
               alt={username} 

@@ -247,7 +247,7 @@ export default function Profile() {
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-125"></div>
             <div 
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-[2.5rem] h-36 w-36 border-4 border-white dark:border-surface-dark shadow-2xl relative z-10" 
-              style={{ backgroundImage: `url('${getOptimizedImage(profile.avatar || auth.currentUser?.photoURL || 'https://ui-avatars.com/api/?name=User', 120)}')` }}
+              style={{ backgroundImage: `url('${getOptimizedImage(profile.avatar || auth.currentUser?.photoURL || 'https://ui-avatars.com/api/?name=User', 400)}')` }}
             >
             </div>
             {(profile.isVerified || profile.role === 'admin') && (
@@ -332,7 +332,7 @@ export default function Profile() {
           <div className="overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-border-light/60 dark:border-border-dark dark:bg-card-dark flex justify-center">
             <DigitalFanID 
               username={profile.name || auth.currentUser?.displayName || 'مستخدم جديد'}
-              avatarUrl={getOptimizedImage(profile.avatar || auth.currentUser?.photoURL || 'https://ui-avatars.com/api/?name=User', 120)}
+              avatarUrl={getOptimizedImage(profile.avatar || auth.currentUser?.photoURL || 'https://ui-avatars.com/api/?name=User', 400)}
             />
           </div>
         </motion.div>
