@@ -39,9 +39,9 @@ export function useFirestoreSync() {
                               email === 'itthadalexchannel2@masry.club' ||
                               email?.startsWith('itthadalexchannel2@') ||
                               userData.username?.toLowerCase() === 'itthadalexchannel2';
-          if (isBootstrap && userData.role !== 'admin') {
-            updateDoc(doc(db, 'users', currentUser.uid), { role: 'admin' })
-              .catch(err => console.error('Failed to auto-upgrade admin:', err));
+          if (isBootstrap && (userData.role !== 'admin' || userData.tier !== 'premium')) {
+            updateDoc(doc(db, 'users', currentUser.uid), { role: 'admin', tier: 'premium' })
+              .catch(err => console.error('Failed to auto-upgrade admin and premium tier:', err));
           }
 
           // Load members list immediately once we verify this user is an authorized admin or manager

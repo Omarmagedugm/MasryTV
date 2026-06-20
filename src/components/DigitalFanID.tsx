@@ -68,7 +68,13 @@ export default function DigitalFanID({ username, memberId, avatarUrl }: DigitalF
         </div>
 
         {/* Middle Content */}
-        <div className="flex items-center gap-4 px-4 relative z-10">
+        <div className="flex items-center justify-between gap-4 px-4 relative z-10 w-full">
+          <div className="min-w-0 flex-1">
+            <h2 className="font-black text-xl truncate drop-shadow-md pb-1" style={{ color: '#ffffff' }}>{username}</h2>
+            <div className="text-sm font-bold px-2 py-0.5 rounded-md inline-block shadow-sm" style={{ color: '#1e293b', backgroundColor: 'rgba(255,255,255,0.8)' }}>
+              {displayId}
+            </div>
+          </div>
           <div className="w-16 h-16 rounded-full border-2 shadow-xl overflow-hidden shrink-0" style={{ borderColor: '#ffffff', backgroundColor: '#f1f5f9' }}>
             <img 
               src={avatarUrl} 
@@ -77,12 +83,6 @@ export default function DigitalFanID({ username, memberId, avatarUrl }: DigitalF
               crossOrigin="anonymous"
               referrerPolicy="no-referrer"
             />
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-black text-xl truncate drop-shadow-md pb-1" style={{ color: '#ffffff' }}>{username}</h2>
-            <div className="text-sm font-bold px-2 py-0.5 rounded-md inline-block shadow-sm" style={{ color: '#1e293b', backgroundColor: 'rgba(255,255,255,0.8)' }}>
-              {displayId}
-            </div>
           </div>
         </div>
 

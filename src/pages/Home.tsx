@@ -354,15 +354,15 @@ export default function Home() {
                     </div>
 
                     <div className="relative z-10 flex flex-col items-center">
-                      <div className="mb-6 sm:mb-10 flex items-center justify-center w-full relative h-10 px-4">
+                      <div className="mb-6 sm:mb-10 flex items-center justify-between w-full relative h-10 px-4">
                         {/* Right: Competition */}
                         <div className="absolute right-0 top-0 text-[9px] font-black text-white px-4 h-9 rounded-2xl backdrop-blur-xl border border-white/15 tracking-[0.2em] flex items-center justify-center gap-2 z-20 bg-white/10 uppercase shadow-glow">
                           <Trophy size={12} className="text-accent shrink-0" />
                           <span className="truncate max-w-[100px] sm:max-w-none">{heroMatch.competition}</span>
                         </div>
                         
-                        {/* Center: Live / Status */}
-                        <div className="flex items-center justify-center z-20">
+                        {/* Left: Match Status (Live / Finished) / Timer */}
+                        <div className="absolute left-0 top-0 flex items-center h-10 gap-2 z-20">
                           {heroMatch.status === "live" ? (
                             <div className="flex shrink-0 items-center justify-center gap-2 px-4 py-1.5 h-9 bg-red-600 rounded-2xl animate-pulse shadow-[0_0_20px_rgba(231,76,60,0.5)] border border-red-500/50">
                               <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -373,10 +373,7 @@ export default function Home() {
                               <span className="text-[9px] font-black text-white/40 tracking-[0.2em] uppercase">FINISHED</span>
                             </div>
                           ) : null}
-                        </div>
 
-                        {/* Left: Timer (Moved absolute far left) */}
-                        <div className="absolute left-0 top-0 flex items-center h-10">
                           {isUpcoming && (
                             <div className="flex shrink-0 items-center gap-1 text-white dir-ltr scale-[0.85] sm:scale-110 bg-black/20 backdrop-blur-md px-3 py-1 rounded-xl border border-white/10" dir="ltr">
                               {[
