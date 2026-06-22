@@ -11,7 +11,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Lock, User, AtSign, ArrowLeft, Loader2, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Mail, Lock, User, AtSign, ArrowLeft, Loader2, ShieldCheck, HelpCircle, Copy, Check } from 'lucide-react';
 import { useAppStore } from '../store';
 import { getOptimizedImage } from '../lib/cloudinary';
 
@@ -24,6 +24,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [domainError, setDomainError] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const navigate = useNavigate();
   const { updateProfile: updateLocalProfile, appSettings } = useAppStore();
 
@@ -51,6 +53,8 @@ export default function Auth() {
     setLoading(true);
     setError('');
     setSuccess('');
+    setDomainError(false);
+    setCopiedIndex(null);
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
@@ -139,11 +143,8 @@ export default function Auth() {
       } else if (code === 'auth/cancelled-popup-request') {
         setError('تم إغلاق نافذة تسجيل الدخول قبل إتمام العملية.');
       } else if (code === 'auth/unauthorized-domain') {
-        const domain = window.location.hostname;
-        setError(`هذا النطاق (${domain}) غير مصرح به في إعدادات Firebase. يرجى إضافة النطاقات التالية في لوحة تحكم Firebase (Authentication -> Settings -> Authorized Domains):
-        1. ${domain}
-        2. ais-dev-tmoviqflfl2mdtiuodosjm-224432693707.europe-west2.run.app
-        3. ais-pre-tmoviqflfl2mdtiuodosjm-224432693707.europe-west2.run.app`);
+        setDomainError(true);
+        setError('unauthorized-domain');
       } else {
         setError('فشل تسجيل الدخول بجوجل: ' + (err.message || code));
       }
@@ -456,7 +457,59 @@ export default function Auth() {
               </div>
             )}
 
-            {error && (
+            {error && error === 'unauthorized-domain' && (
+              <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-2xl p-4 my-3 text-right">
+                <div className="flex items-start gap-3">
+                  <div className="bg-red-500 text-white rounded-full p-1 mt-0.5 shrink-0">
+                    <ShieldCheck size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-red-600 dark:text-red-400 font-black text-xs mb-1">
+                      النطاق غير مصرح به في إعدادات Firebase
+                    </h4>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-bold">
+                      يرجى إضافة النطاقات التالية في لوحة تحكم Firebase (Authentication 🡨 Settings 🡨 Authorized Domains):
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 mt-3 font-mono text-xs">
+                  {Array.from(new Set([
+                    window.location.hostname,
+                    'masry-tv.vercel.app',
+                    'ais-dev-tmoviqflfl2mdtiuodosjm-224432693707.europe-west2.run.app',
+                    'ais-pre-tmoviqflfl2mdtiuodosjm-224432693707.europe-west2.run.app'
+                  ])).map((domain, index) => (
+                    <div key={index} className="flex items-center justify-between bg-slate-100 dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(domain);
+                          setCopiedIndex(index);
+                          setTimeout(() => setCopiedIndex(null), 2000);
+                        }}
+                        className="flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 py-1 px-2 rounded-lg text-[10px] font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer font-sans"
+                      >
+                        {copiedIndex === index ? (
+                          <>
+                            <Check size={12} className="text-green-500 animate-bounce" />
+                            <span className="text-green-500">تم النسخ</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} className="text-slate-400" />
+                            <span>نسخ</span>
+                          </>
+                        )}
+                      </button>
+                      <span className="text-slate-800 dark:text-slate-250 select-all font-bold tracking-tight text-[11px] text-left break-all font-mono">{domain}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && error !== 'unauthorized-domain' && (
               <p className="text-red-500 text-[10px] font-bold bg-red-50 dark:bg-red-900/10 p-2 rounded-lg text-center">{error}</p>
             )}
 

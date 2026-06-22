@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, doc, limit, updateDoc, where, getDocs, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, limit, updateDoc, where, getDocs, getDoc, setDoc } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 import { useAppStore } from '../store';
 
@@ -12,6 +12,85 @@ export function useFirestoreSync() {
   } = useAppStore();
 
   useEffect(() => {
+    // Dynamic Fallback loader if Firestore collections are empty or offline
+    const loadBackupAsFallback = async () => {
+      try {
+        console.log('Fetching backup_data.json as fallback...');
+        const res = await fetch('/backup_data.json');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Successfully loaded backup fallback data in-memory');
+          
+          if (data.news && data.news.length > 0) setNews(data.news.map((item: any) => ({ id: item.id, ...item })));
+          if (data.matches && data.matches.length > 0) setMatches(data.matches.map((item: any) => ({ id: item.id, ...item })));
+          if (data.media && data.media.length > 0) setMedia(data.media.map((item: any) => ({ id: item.id, ...item })));
+          if (data.products && data.products.length > 0) setProducts(data.products.map((item: any) => ({ id: item.id, ...item })));
+          if (data.songs && data.songs.length > 0) setSongs(data.songs.map((item: any) => ({ id: item.id, ...item })));
+          if (data.albums && data.albums.length > 0) setAlbums(data.albums.map((item: any) => ({ id: item.id, ...item })));
+          if (data.playlists && data.playlists.length > 0) setPlaylists(data.playlists.map((item: any) => ({ id: item.id, ...item })));
+          if (data.media_playlists && data.media_playlists.length > 0) setMediaPlaylists(data.media_playlists.map((item: any) => ({ id: item.id, ...item })));
+          if (data.books && data.books.length > 0) setBooks(data.books.map((item: any) => ({ id: item.id, ...item })));
+          if (data.club_stats && data.club_stats.length > 0) setClubStats(data.club_stats.map((item: any) => ({ id: item.id, ...item })));
+          if (data.club_titles && data.club_titles.length > 0) setClubTitles(data.club_titles.map((item: any) => ({ id: item.id, ...item })));
+          if (data.club_timeline && data.club_timeline.length > 0) setHistoryEvents(data.club_timeline.map((item: any) => ({ id: item.id, ...item })));
+          if (data.club_stadiums && data.club_stadiums.length > 0) setStadiums(data.club_stadiums.map((item: any) => ({ id: item.id, ...item })));
+          if (data.ads && data.ads.length > 0) setAds(data.ads.map((item: any) => ({ id: item.id, ...item })));
+          if (data.custom_pages && data.custom_pages.length > 0) setCustomPages(data.custom_pages.map((item: any) => ({ id: item.id, ...item })));
+          if (data.city_info && data.city_info.length > 0) {
+            const portsaidInfo = data.city_info.find((item: any) => item.id === 'portsaid') || data.city_info[0];
+            if (portsaidInfo) setCityInfo(portsaidInfo);
+          }
+          if (data.settings) {
+            const globalSettings = data.settings.find((item: any) => item.id === 'global');
+            if (globalSettings) setSettings(globalSettings);
+            const liveStreamSettings = data.settings.find((item: any) => item.id === 'liveStream');
+            if (liveStreamSettings) updateLiveStream(liveStreamSettings);
+            const categories = data.settings.find((item: any) => item.id === 'newsCategories');
+            if (categories) setNewsCategories(categories.list || []);
+            const tags = data.settings.find((item: any) => item.id === 'newsTags');
+            if (tags) setNewsTags(tags.tags || []);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load backup data fallback:', err);
+      }
+    };
+
+    const tryAutoSeedFirebase = async (isUserAdmin: boolean) => {
+      if (!isUserAdmin) return;
+      try {
+        const newsCheck = await getDocs(query(collection(db, 'news'), limit(1)));
+        if (newsCheck.empty) {
+          console.log('Admin logged in and empty database detected. Auto-seeding Firestore from backup...');
+          const res = await fetch('/backup_data.json');
+          if (res.ok) {
+            const backup = await res.json();
+            const collections = Object.keys(backup);
+            for (const col of collections) {
+              const items = backup[col];
+              if (Array.isArray(items)) {
+                for (const item of items) {
+                  const { id, ...docData } = item;
+                  if (id) {
+                    try {
+                      await setDoc(doc(db, col, id), docData);
+                    } catch (e) {
+                      console.warn(`Auto-seed doc ${id} warning:`, e);
+                    }
+                  }
+                }
+              }
+            }
+            console.log('Auto-seeding Firestore complete!');
+            // Reload to update real-time listeners across all clients
+            window.location.reload();
+          }
+        }
+      } catch (err) {
+        console.error('Auto-seed check failed:', err);
+      }
+    };
+
     // Sync Current User Profile first (Real-time)
     let unsubProfile = () => {};
     const currentUser = auth.currentUser;
@@ -56,6 +135,9 @@ export function useFirestoreSync() {
                 setUsers(fetchedUsers);
               })
               .catch(err => console.error('Failed to fetch members list dynamically:', err));
+
+            // Auto-seed if database is blank
+            tryAutoSeedFirebase(true);
           }
         }
       }, (error) => handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`));
@@ -71,9 +153,17 @@ export function useFirestoreSync() {
     // Sync Matches (Real-time - essential for live tracking)
     const matchesQuery = query(collection(db, 'matches'), orderBy('date', 'desc'));
     const unsubMatches = onSnapshot(matchesQuery, (snapshot) => {
-      const matches = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
-      setMatches(matches);
-    }, (error) => handleFirestoreError(error, OperationType.LIST, 'matches'));
+      if (snapshot.empty) {
+        console.warn('Matches collection is empty in Firestore, trying backup data fallback...');
+        loadBackupAsFallback();
+      } else {
+        const matches = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
+        setMatches(matches);
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'matches');
+      loadBackupAsFallback();
+    });
 
     // Sync Home Layout (Real-time for admins to see changes immediately)
     const unsubLayout = onSnapshot(doc(db, 'settings', 'homeLayout'), (snap) => {
@@ -103,9 +193,17 @@ export function useFirestoreSync() {
     // Sync News (Real-time with limit)
     const newsQuery = query(collection(db, 'news'), orderBy('date', 'desc'), limit(50));
     const unsubNews = onSnapshot(newsQuery, (snapshot) => {
-      const news = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
-      setNews(news);
-    }, (error) => handleFirestoreError(error, OperationType.LIST, 'news'));
+      if (snapshot.empty) {
+        console.warn('News collection is empty in Firestore, trying backup data fallback...');
+        loadBackupAsFallback();
+      } else {
+        const news = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
+        setNews(news);
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'news');
+      loadBackupAsFallback();
+    });
 
     // Sync Media (Real-time with limit)
     const mediaQuery = query(collection(db, 'media'), orderBy('date', 'desc'), limit(50));

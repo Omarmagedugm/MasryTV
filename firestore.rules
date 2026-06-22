@@ -2,43 +2,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     // Global Helpers
     function isSignedIn() { return request.auth != null; }
     function isEmailVerified() { return request.auth.token.email_verified == true; }
     
     function isAdmin() { 
       return isSignedIn() && (
-        request.auth.token.get('email', '').lower() == 'copyrightofficialco@gmail.com' || 
-        request.auth.token.get('email', '').lower() == 'omarmagedugm@gmail.com' ||
-        request.auth.token.get('email', '').lower() == 'itthadalexchannel2@gmail.com' ||
-        request.auth.token.get('email', '').lower() == 'itthadalexchannel2@masry.club' ||
-        request.auth.token.get('email', '').lower().matches('^itthadalexchannel2@.*') ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'copyrightofficialco@gmail.com' || 
+          request.auth.token.email.lower() == 'omarmagedugm@gmail.com' ||
+          request.auth.token.email.lower() == 'itthadalexchannel2@gmail.com' ||
+          request.auth.token.email.lower() == 'itthadalexchannel2@masry.club' ||
+          request.auth.token.email.lower().matches('^itthadalexchannel2@.*')
+        )) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin' ||
           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']))
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []).hasAny(['admin']))
         ))
       );
     }
 
     function hasAnyRole(rolesList) {
       return isSignedIn() && (
-        (request.auth.token.get('email', '').lower() == 'copyrightofficialco@gmail.com' || 
-         request.auth.token.get('email', '').lower() == 'omarmagedugm@gmail.com' ||
-         request.auth.token.get('email', '').lower() == 'itthadalexchannel2@gmail.com' ||
-         request.auth.token.get('email', '').lower() == 'itthadalexchannel2@masry.club' ||
-         request.auth.token.get('email', '').lower().matches('^itthadalexchannel2@.*')
-        ) ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'copyrightofficialco@gmail.com' || 
+          request.auth.token.email.lower() == 'omarmagedugm@gmail.com' ||
+          request.auth.token.email.lower() == 'itthadalexchannel2@gmail.com' ||
+          request.auth.token.email.lower() == 'itthadalexchannel2@masry.club' ||
+          request.auth.token.email.lower().matches('^itthadalexchannel2@.*')
+        )) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin' ||
-          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin'])) ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []).hasAny(['admin'])) ||
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') in rolesList || 
-          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(rolesList)) ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []).hasAny(rolesList)) ||
           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'writer' && 'news_editor' in rolesList) ||
           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'moderator' && ('user_manager' in rolesList || 'media_editor' in rolesList || 'news_editor' in rolesList))
         ))
@@ -55,12 +55,12 @@ service cloud.firestore {
 
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     function isBootstrapAdmin(userId) {
-      return isOwner(userId) && (
-        request.auth.token.get('email', '').lower() == 'copyrightofficialco@gmail.com' ||
-        request.auth.token.get('email', '').lower() == 'omarmagedugm@gmail.com' ||
-        request.auth.token.get('email', '').lower() == 'itthadalexchannel2@gmail.com' ||
-        request.auth.token.get('email', '').lower() == 'itthadalexchannel2@masry.club' ||
-        request.auth.token.get('email', '').lower().matches('^itthadalexchannel2@.*')
+      return isOwner(userId) && request.auth.token.email != null && (
+        request.auth.token.email.lower() == 'copyrightofficialco@gmail.com' ||
+        request.auth.token.email.lower() == 'omarmagedugm@gmail.com' ||
+        request.auth.token.email.lower() == 'itthadalexchannel2@gmail.com' ||
+        request.auth.token.email.lower() == 'itthadalexchannel2@masry.club' ||
+        request.auth.token.email.lower().matches('^itthadalexchannel2@.*')
       );
     }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
@@ -235,7 +235,7 @@ service cloud.firestore {
 
     // Notifications
     match /notifications/{id} {
-      allow read: if isSignedIn() && (resource.data.get('target', 'all') == 'all' || resource.data.target == request.auth.uid || isAdmin() || isUserManager());
+      allow read: if isSignedIn();
       allow write: if isAdmin() || isUserManager();
       allow update: if isSignedIn() && (incoming().diff(existing()).affectedKeys().hasOnly(['readBy']));
     }
@@ -291,6 +291,11 @@ service cloud.firestore {
     match /news_categories/{id} { allow read: if true; allow write: if isAdmin() || isNewsEditor(); }
     match /ads/{adId} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
     match /home_sections/{id} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+
+    // Connection Test
+    match /test/{id} {
+      allow read, write: if true;
+    }
 
     // Custom Pages
     match /custom_pages/{pageId} {
