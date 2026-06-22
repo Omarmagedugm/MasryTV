@@ -82,8 +82,11 @@ export function useFirestoreSync() {
               }
             }
             console.log('Auto-seeding Firestore complete!');
-            // Reload to update real-time listeners across all clients
-            window.location.reload();
+            // Notify user before reloading to avoid surprising them
+            if (typeof window !== 'undefined') {
+              console.info('Database seeded. Reloading to apply data...');
+              setTimeout(() => window.location.reload(), 1500);
+            }
           }
         }
       } catch (err) {
@@ -218,6 +221,31 @@ export function useFirestoreSync() {
       setMediaPlaylists(playlists);
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'media_playlists'));
 
+    // Sync Songs (Real-time) — was missing, data was only loaded from backup JSON
+    const songsQuery = query(collection(db, 'songs'), orderBy('createdAt', 'desc'));
+    const unsubSongs = onSnapshot(songsQuery, (snapshot) => {
+      const songs = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
+      setSongs(songs);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'songs'));
+
+    // Sync Albums (Real-time) — was missing
+    const unsubAlbums = onSnapshot(collection(db, 'albums'), (snapshot) => {
+      const albums = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
+      setAlbums(albums);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'albums'));
+
+    // Sync Music Playlists (Real-time) — was missing
+    const unsubPlaylists = onSnapshot(collection(db, 'playlists'), (snapshot) => {
+      const playlists = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
+      setPlaylists(playlists);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'playlists'));
+
+    // Sync Books (Real-time) — was missing
+    const unsubBooks = onSnapshot(collection(db, 'books'), (snapshot) => {
+      const books = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) })) as any;
+      setBooks(books);
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'books'));
+
     // Sync Fan Posts (Real-time)
     const fanPostsQuery = query(collection(db, 'fan_posts'), orderBy('createdAt', 'desc'), limit(50));
     const unsubFanPosts = onSnapshot(fanPostsQuery, (snapshot) => {
@@ -228,13 +256,13 @@ export function useFirestoreSync() {
     // Sync Orders (Real-time)
     let unsubOrders = () => {};
     if (currentUser) {
-      setTimeout(() => {
-        const isAdminProfile = useAppStore.getState().profile?.role === 'admin';
+      // Listen to profile snapshot to set up orders query reactively (avoids setTimeout race condition)
+      const setupOrdersQuery = (isAdmin: boolean) => {
         try {
-          const ordersQuery = isAdminProfile 
+          const ordersQuery = isAdmin
             ? query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
             : query(collection(db, 'orders'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
-            
+
           unsubOrders = onSnapshot(ordersQuery, (snapshot) => {
             const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
             useAppStore.getState().setOrders(items);
@@ -242,7 +270,20 @@ export function useFirestoreSync() {
         } catch (e) {
           console.error('Orders Query Setup Error:', e);
         }
-      }, 1000); // slight delay to allow profile load
+      };
+
+      // Start with user-scoped query immediately, upgrade to admin query if profile confirms admin role
+      setupOrdersQuery(false);
+      const profileUnsub = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
+        if (snap.exists()) {
+          const role = snap.data()?.role;
+          if (role === 'admin') {
+            unsubOrders(); // cancel user-scoped query
+            setupOrdersQuery(true);
+            profileUnsub(); // no need to keep watching
+          }
+        }
+      }, () => {});
     }
 
     // One-time Fetch for Static/Infrequent Data with Stale-While-Revalidate
@@ -342,6 +383,10 @@ export function useFirestoreSync() {
       unsubNews();
       unsubMedia();
       unsubMediaPlaylists();
+      unsubSongs();
+      unsubAlbums();
+      unsubPlaylists();
+      unsubBooks();
       unsubFanPosts();
       unsubOrders();
     };

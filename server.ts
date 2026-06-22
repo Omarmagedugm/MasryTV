@@ -51,6 +51,65 @@ async function startServer() {
     res.json({ status: 'ok' });
   });
 
+  // Gemini AI Jersey Try-On Endpoint (server-side to keep API key secure)
+  app.post('/api/ai/jersey-tryon', async (req: any, res: any) => {
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: 'AI service not configured' });
+      }
+
+      const { userImageBase64, jerseyImageBase64, logoImageBase64, backgroundPrompt } = req.body;
+      if (!userImageBase64 || !jerseyImageBase64) {
+        return res.status(400).json({ error: 'Missing required images' });
+      }
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey });
+
+      const aiParts: any[] = [
+        { text: 'Customer Image (Identity to preserve):' },
+        { inlineData: { data: userImageBase64, mimeType: 'image/jpeg' } },
+        { text: 'Target Jersey to Wear:' },
+        { inlineData: { data: jerseyImageBase64, mimeType: 'image/jpeg' } },
+      ];
+
+      if (logoImageBase64) {
+        aiParts.push({ text: 'Official Club Logo (Brand Reference):' });
+        aiParts.push({ inlineData: { data: logoImageBase64, mimeType: 'image/jpeg' } });
+      }
+
+      aiParts.push({ text: backgroundPrompt });
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-preview-05-20',
+        contents: { parts: aiParts },
+        config: { responseModalities: ['IMAGE', 'TEXT'] },
+      });
+
+      let generatedImageBase64 = '';
+      if (response.candidates?.[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if ((part as any).inlineData?.data) {
+            generatedImageBase64 = (part as any).inlineData.data;
+            break;
+          }
+        }
+      }
+
+      if (!generatedImageBase64) {
+        const textResponse = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
+        return res.status(422).json({ error: textResponse || 'No image generated' });
+      }
+
+      res.json({ imageBase64: generatedImageBase64 });
+    } catch (error: any) {
+      console.error('Gemini API error:', error?.message || error);
+      const status = error?.message?.includes('429') ? 429 : 500;
+      res.status(status).json({ error: error?.message || 'AI processing failed' });
+    }
+  });
+
   // Cloudinary Upload Endpoint
   app.post('/api/upload', upload.single('image'), async (req: any, res: any) => {
     try {
