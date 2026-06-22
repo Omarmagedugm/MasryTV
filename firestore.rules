@@ -4,17 +4,30 @@ service cloud.firestore {
 
     // Global Helpers
     function isSignedIn() { return request.auth != null; }
-    function isEmailVerified() { return request.auth.token.email_verified == true; }
+    function isEmailVerified() {
+      return isSignedIn() && 
+             request.auth.token != null && 
+             'email_verified' in request.auth.token && 
+             request.auth.token.email_verified == true;
+    }
+    
+    function lowerEmail() {
+      return (isSignedIn() && request.auth.token != null && 'email' in request.auth.token && request.auth.token.email != null) 
+             ? request.auth.token.email.lower() 
+             : '';
+    }
+
+    function checkEmail(email) {
+      return email == 'copyrightofficialco@gmail.com' || 
+             email == 'omarmagedugm@gmail.com' ||
+             email == 'itthadalexchannel2@gmail.com' ||
+             email == 'itthadalexchannel2@masry.club' ||
+             email.matches('^itthadalexchannel2@.*');
+    }
     
     function isAdmin() { 
       return isSignedIn() && (
-        (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'copyrightofficialco@gmail.com' || 
-          request.auth.token.email.lower() == 'omarmagedugm@gmail.com' ||
-          request.auth.token.email.lower() == 'itthadalexchannel2@gmail.com' ||
-          request.auth.token.email.lower() == 'itthadalexchannel2@masry.club' ||
-          request.auth.token.email.lower().matches('^itthadalexchannel2@.*')
-        )) ||
+        checkEmail(lowerEmail()) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin' ||
           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
@@ -25,13 +38,7 @@ service cloud.firestore {
 
     function hasAnyRole(rolesList) {
       return isSignedIn() && (
-        (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'copyrightofficialco@gmail.com' || 
-          request.auth.token.email.lower() == 'omarmagedugm@gmail.com' ||
-          request.auth.token.email.lower() == 'itthadalexchannel2@gmail.com' ||
-          request.auth.token.email.lower() == 'itthadalexchannel2@masry.club' ||
-          request.auth.token.email.lower().matches('^itthadalexchannel2@.*')
-        )) ||
+        checkEmail(lowerEmail()) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin' ||
           (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
@@ -55,13 +62,7 @@ service cloud.firestore {
 
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     function isBootstrapAdmin(userId) {
-      return isOwner(userId) && request.auth.token.email != null && (
-        request.auth.token.email.lower() == 'copyrightofficialco@gmail.com' ||
-        request.auth.token.email.lower() == 'omarmagedugm@gmail.com' ||
-        request.auth.token.email.lower() == 'itthadalexchannel2@gmail.com' ||
-        request.auth.token.email.lower() == 'itthadalexchannel2@masry.club' ||
-        request.auth.token.email.lower().matches('^itthadalexchannel2@.*')
-      );
+      return isOwner(userId) && checkEmail(lowerEmail());
     }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
@@ -303,9 +304,9 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Global Admin Override
+    // Default Deny
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if false;
     }
   }
 }

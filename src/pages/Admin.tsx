@@ -2542,12 +2542,19 @@ export default function Admin() {
                   <div key={i} className="flex items-center gap-2 bg-slate-50 dark:bg-surface-dark px-3 py-2 rounded-xl border border-slate-100 dark:border-border-dark group">
                     <span className="text-xs font-bold">{cat}</span>
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         const newList = [...newsCategories];
                         const updatedName = prompt('تعديل اسم القسم:', cat);
                         if (updatedName && updatedName.trim() !== '') {
                           newList[i] = updatedName.trim();
-                          setDoc(doc(db, 'settings', 'newsCategories'), { list: newList });
+                          try {
+                            setNewsCategories(newList);
+                            await setDoc(doc(db, 'settings', 'newsCategories'), { list: newList });
+                            toast.success('تم تعديل القسم بنجاح');
+                          } catch (err) {
+                            handleFirestoreError(err, OperationType.WRITE, 'settings/newsCategories');
+                            toast.error('فشل في حفظ التعديل');
+                          }
                         }
                       }}
                       className="text-blue-400 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100"
@@ -2555,9 +2562,18 @@ export default function Admin() {
                       <Edit2 size={12} />
                     </button>
                     <button 
-                      onClick={() => {
-                        const newList = newsCategories.filter((_, idx) => idx !== i);
-                        setDoc(doc(db, 'settings', 'newsCategories'), { list: newList });
+                      onClick={async () => {
+                        if (confirm('هل أنت متأكد من حذف هذا القسم؟')) {
+                          const newList = newsCategories.filter((_, idx) => idx !== i);
+                          try {
+                            setNewsCategories(newList);
+                            await setDoc(doc(db, 'settings', 'newsCategories'), { list: newList });
+                            toast.success('تم حذف القسم بنجاح');
+                          } catch (err) {
+                            handleFirestoreError(err, OperationType.WRITE, 'settings/newsCategories');
+                            toast.error('فشل في حذف القسم');
+                          }
+                        }
                       }}
                       className="text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 ml-1"
                     >
@@ -2575,12 +2591,20 @@ export default function Admin() {
                   className="flex-1 p-3 rounded-xl border border-border-light bg-slate-50 dark:bg-surface-dark text-xs font-bold" 
                 />
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     const input = document.getElementById('new-category') as HTMLInputElement;
-                    if (input.value.trim()) {
-                      const newList = [...newsCategories, input.value.trim()];
-                      setDoc(doc(db, 'settings', 'newsCategories'), { list: newList });
-                      input.value = '';
+                    const value = input.value.trim();
+                    if (value) {
+                      const newList = [...newsCategories, value];
+                      try {
+                        setNewsCategories(newList);
+                        input.value = '';
+                        await setDoc(doc(db, 'settings', 'newsCategories'), { list: newList });
+                        toast.success('تم إضافة القسم بنجاح');
+                      } catch (err) {
+                        handleFirestoreError(err, OperationType.WRITE, 'settings/newsCategories');
+                        toast.error('فشل في إضافة القسم');
+                      }
                     }
                   }}
                   className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-xs"
@@ -2609,13 +2633,20 @@ export default function Admin() {
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.color }} />
                     <span className="text-xs font-bold" style={{ color: tag.color }}>{tag.name}</span>
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         const tags = [...useAppStore.getState().newsTags];
                         const updatedName = prompt('تعديل اسم الوسم:', tag.name);
                         const updatedColor = prompt('لون الوسم (HEX):', tag.color);
                         if (updatedName && updatedName.trim() !== '') {
                           tags[i] = { ...tag, name: updatedName.trim(), color: updatedColor || tag.color };
-                          setDoc(doc(db, 'settings', 'newsTags'), { tags });
+                          try {
+                            setNewsTags(tags);
+                            await setDoc(doc(db, 'settings', 'newsTags'), { tags });
+                            toast.success('تم تعديل الوسم بنجاح');
+                          } catch (err) {
+                            handleFirestoreError(err, OperationType.WRITE, 'settings/newsTags');
+                            toast.error('فشل في تعديل الوسم');
+                          }
                         }
                       }}
                       className="text-blue-400 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100 mr-2"
@@ -2623,10 +2654,17 @@ export default function Admin() {
                       <Edit2 size={12} />
                     </button>
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         if (confirm('هل أنت متأكد من حذف هذا الوسم؟')) {
                           const tags = useAppStore.getState().newsTags.filter((_, idx) => idx !== i);
-                          setDoc(doc(db, 'settings', 'newsTags'), { tags });
+                          try {
+                            setNewsTags(tags);
+                            await setDoc(doc(db, 'settings', 'newsTags'), { tags });
+                            toast.success('تم حذف الوسم بنجاح');
+                          } catch (err) {
+                            handleFirestoreError(err, OperationType.WRITE, 'settings/newsTags');
+                            toast.error('فشل في حذف الوسم');
+                          }
                         }
                       }}
                       className="text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 ml-1"
@@ -2651,14 +2689,22 @@ export default function Admin() {
                   className="flex-1 p-3 rounded-xl border border-border-light bg-slate-50 dark:bg-surface-dark text-xs font-bold" 
                 />
                 <button 
-                  onClick={() => {
+                  onClick={async () => {
                     const nameInput = document.getElementById('new-tag-name') as HTMLInputElement;
                     const colorInput = document.getElementById('new-tag-color') as HTMLInputElement;
-                    if (nameInput.value.trim()) {
+                    const name = nameInput.value.trim();
+                    if (name) {
                       const tags = [...(useAppStore.getState().newsTags || [])];
-                      tags.push({ id: uuidv4(), name: nameInput.value.trim(), color: colorInput.value });
-                      setDoc(doc(db, 'settings', 'newsTags'), { tags });
-                      nameInput.value = '';
+                      tags.push({ id: uuidv4(), name, color: colorInput.value });
+                      try {
+                        setNewsTags(tags);
+                        nameInput.value = '';
+                        await setDoc(doc(db, 'settings', 'newsTags'), { tags });
+                        toast.success('تم إضافة الوسم بنجاح');
+                      } catch (err) {
+                        handleFirestoreError(err, OperationType.WRITE, 'settings/newsTags');
+                        toast.error('فشل في إضافة الوسم');
+                      }
                     }
                   }}
                   className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-xs"

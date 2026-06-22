@@ -104,11 +104,7 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfigJson.messagingSenderId,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigJson.appId,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || firebaseConfigJson.measurementId,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || (
-    typeof window !== 'undefined' && window.location.hostname.includes('ais-dev-')
-      ? firebaseConfigJson.firestoreDatabaseId
-      : '(default)'
-  )
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || "(default)"
 };
 
 console.log('Firebase Configuration Check:', {
@@ -120,12 +116,16 @@ console.log('Firebase Configuration Check:', {
 const app = initializeApp(firebaseConfig);
 
 // Using initializeFirestore with persistent local cache and experimental settings to improve connectivity in restricted environments
+const firestoreDbId = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
+  ? firebaseConfig.firestoreDatabaseId 
+  : undefined;
+
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager()
   }),
   experimentalForceLongPolling: true,
-}, firebaseConfig.firestoreDatabaseId || '(default)');
+}, firestoreDbId);
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);
