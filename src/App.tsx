@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, lazy, Suspense } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import ScrollToTop from './components/ScrollToTop';
@@ -6,22 +6,21 @@ import { useAppStore, useResolvedMatches } from './store';
 import { useFirestoreSync } from './hooks/useFirestore';
 import { auth, requestNotificationPermission } from './lib/firebase';
 
-// Lazy-loaded pages for code splitting (reduces initial bundle from 2.5MB to ~400KB)
-const Auth = lazy(() => import('./pages/Auth'));
-const Home = lazy(() => import('./pages/Home'));
-const News = lazy(() => import('./pages/News'));
-const NewsDetail = lazy(() => import('./pages/NewsDetail'));
-const Live = lazy(() => import('./pages/Live'));
-const Matches = lazy(() => import('./pages/Matches'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Admin = lazy(() => import('./pages/Admin'));
-const FanZone = lazy(() => import('./pages/FanZone'));
-const JerseyTryOn = lazy(() => import('./pages/JerseyTryOn'));
-const History = lazy(() => import('./pages/History'));
-const Store = lazy(() => import('./pages/Store'));
-const Bookmarks = lazy(() => import('./pages/Bookmarks'));
-const Library = lazy(() => import('./pages/Library'));
-const CustomPage = lazy(() => import('./pages/CustomPage'));
+import Auth from './pages/Auth';
+import Home from './pages/Home';
+import News from './pages/News';
+import NewsDetail from './pages/NewsDetail';
+import Live from './pages/Live';
+import Matches from './pages/Matches';
+import Profile from './pages/Profile';
+import Admin from './pages/Admin';
+import FanZone from './pages/FanZone';
+import JerseyTryOn from './pages/JerseyTryOn';
+import History from './pages/History';
+import Store from './pages/Store';
+import Bookmarks from './pages/Bookmarks';
+import Library from './pages/Library';
+import CustomPage from './pages/CustomPage';
 
 import BottomNav from './components/BottomNav';
 import TopHeader from './components/TopHeader';
@@ -188,7 +187,6 @@ export default function App() {
       />
       <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-[calc(100vh-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex flex-col font-display antialiased transition-colors duration-200">
         <TopHeader />
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" /></div>}>
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Home />} />
@@ -209,7 +207,6 @@ export default function App() {
           <Route path="/page/:slug" element={<CustomPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        </Suspense>
         <AppNav />
         <MusicPlayer />
         <PWAInstallPrompt />

@@ -3,7 +3,6 @@
  */
 export const getOptimizedImage = (url: string | undefined | null, width?: number) => {
   if (!url) return '';
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dqj6gzwfg';
   const isPng = url.toLowerCase().includes('.png');
   const isLogo = url.toLowerCase().includes('logo') || url.toLowerCase().includes('favicon');
 
@@ -19,7 +18,7 @@ export const getOptimizedImage = (url: string | undefined | null, width?: number
     if (!isPng && !isLogo) transformations.push('f_auto');
     if (targetWidth && !isLogo) transformations.push(`w_${targetWidth}`, 'c_limit');
     
-    return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformations.join(',')}/${encodeURIComponent(url)}`;
+    return `https://res.cloudinary.com/dqj6gzwfg/image/fetch/${transformations.join(',')}/${encodeURIComponent(url)}`;
   }
   
   // Check if it's already optimized by our code

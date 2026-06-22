@@ -107,6 +107,12 @@ const firebaseConfig = {
   firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || "(default)"
 };
 
+console.log('Firebase Configuration Check:', {
+  projectId: firebaseConfig.projectId,
+  databaseId: firebaseConfig.firestoreDatabaseId,
+  hasApiKey: !!firebaseConfig.apiKey
+});
+
 const app = initializeApp(firebaseConfig);
 
 // Using initializeFirestore with persistent local cache and experimental settings to improve connectivity in restricted environments
