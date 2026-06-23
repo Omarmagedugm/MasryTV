@@ -4,7 +4,7 @@ import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persi
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { getDatabase } from 'firebase/database';
-
+import firebaseConfigJson from '../../firebase-applet-config.json';
 
 export enum OperationType {
   CREATE = 'create',
@@ -96,7 +96,7 @@ export function handleStorageError(error: any, path: string) {
 }
 
 const firebaseConfig = {
-
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigJson.apiKey,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigJson.authDomain,
   databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || (firebaseConfigJson as any).databaseURL || "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigJson.projectId,
