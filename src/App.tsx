@@ -21,6 +21,7 @@ import Store from './pages/Store';
 import Bookmarks from './pages/Bookmarks';
 import Library from './pages/Library';
 import CustomPage from './pages/CustomPage';
+import DbSetup from './pages/DbSetup';
 
 import BottomNav from './components/BottomNav';
 import TopHeader from './components/TopHeader';
@@ -205,6 +206,7 @@ export default function App() {
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="/library" element={<Library />} />
           <Route path="/page/:slug" element={<CustomPage />} />
+          <Route path="/db-setup" element={<DbSetup />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <AppNav />

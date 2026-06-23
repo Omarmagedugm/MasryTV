@@ -103,6 +103,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, onClose }: Admin
       { id: 'users', icon: <UsersIcon size={18} />, label: 'إدارة الأعضاء', show: isAdmin || hasRole('user_manager') },
       { id: 'notifications', icon: <Bell size={18} />, label: 'إرسال إشعارات', show: isAdmin || hasRole('user_manager') },
       { id: 'settings', icon: <SettingsIcon size={18} />, label: 'إعدادات النظام', show: isAdmin },
+      { id: 'db-setup', icon: <Database size={18} />, label: 'ربط واستيراد البيانات', show: isAdmin, onClick: () => navigate('/db-setup') },
       { id: 'backup', icon: <Database size={18} />, label: 'نسخة احتياطية', show: isAdmin },
     ]}
   ];
@@ -135,7 +136,11 @@ export default function AdminSidebar({ activeTab, setActiveTab, onClose }: Admin
                 <button
                   key={item.id}
                   onClick={() => {
-                    setActiveTab(item.id as any);
+                    if ((item as any).onClick) {
+                      (item as any).onClick();
+                    } else {
+                      setActiveTab(item.id as any);
+                    }
                     if (onClose) onClose();
                   }}
                   className={`flex items-center w-full gap-3 px-4 py-2.5 rounded-2xl transition-all font-bold text-sm ${
