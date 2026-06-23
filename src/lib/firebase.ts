@@ -113,7 +113,7 @@ const firestoreDbId = firebaseConfig.firestoreDatabaseId && firebaseConfig.fires
   : undefined;
 
 export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
+  experimentalAutoDetectLongPolling: true,
 }, firestoreDbId);
 
 export const auth = getAuth(app);

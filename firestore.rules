@@ -12,7 +12,7 @@ service cloud.firestore {
     
     function lowerEmail() {
       return (isSignedIn() && request.auth.token != null && 'email' in request.auth.token && request.auth.token.email != null) 
-             ? request.auth.token.email
+             ? request.auth.token.email.lower()
              : '';
     }
 
@@ -23,32 +23,33 @@ service cloud.firestore {
              email == 'itthadalexchannel2@masry.club';
     }
     
-    function checkIsAdmin(profile) {
-      return profile.get('role', 'user') == 'admin' ||
-             (profile.get('roles', []) is list && profile.get('roles', []).hasAny(['admin']));
+    function userDoc() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
     }
 
-    function checkRoles(profile, rolesList) {
-      return checkIsAdmin(profile) ||
-             profile.get('role', 'user') in rolesList || 
-             (profile.get('roles', []) is list && profile.get('roles', []).hasAny(rolesList)) ||
-             (profile.get('role', 'user') == 'writer' && 'news_editor' in rolesList) ||
-             (profile.get('role', 'user') == 'moderator' && ('user_manager' in rolesList || 'media_editor' in rolesList || 'news_editor' in rolesList));
+    function getUserRole() {
+      return (isSignedIn() && exists(userDoc())) ? get(userDoc()).data.get('role', 'user') : 'user';
+    }
+
+    function getUserRoles() {
+      return (isSignedIn() && exists(userDoc())) ? get(userDoc()).data.get('roles', []) : [];
     }
 
     function isAdmin() { 
       return isSignedIn() && (
         checkEmail(lowerEmail()) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         checkIsAdmin(get(/databases/$(database)/documents/users/$(request.auth.uid)).data))
+        getUserRole() == 'admin' ||
+        (getUserRoles() is list && getUserRoles().hasAny(['admin']))
       );
     }
 
     function hasAnyRole(rolesList) {
       return isSignedIn() && (
         checkEmail(lowerEmail()) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         checkRoles(get(/databases/$(database)/documents/users/$(request.auth.uid)).data, rolesList))
+        rolesList.hasAny([getUserRole()]) ||
+        (getUserRoles() is list && getUserRoles().hasAny(rolesList)) ||
+        (getUserRole() == 'writer' && rolesList.hasAny(['news_editor'])) ||
+        (getUserRole() == 'moderator' && rolesList.hasAny(['user_manager', 'media_editor', 'news_editor']))
       );
     }
 
