@@ -169,7 +169,7 @@ export default function DbSetup() {
             </ul>
           </div>
 
-          <div className="bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900Item/40 p-5">
+          <div className="bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-200 dark:border-amber-900/40 p-5">
             <div className="flex gap-3 mb-3">
               <AlertTriangle className="text-amber-600 shrink-0" size={20} />
               <h3 className="font-black text-sm text-amber-800 dark:text-amber-400">حالة الاتصال النشطة</h3>
@@ -181,9 +181,49 @@ export default function DbSetup() {
               </p>
             ) : (
               <p className="text-xs text-amber-700 dark:text-amber-400">
-                برجاء الدخول لحساب المشرف الخاص بك أولاً عبر صفحة <Link to="/auth" className="underline font-bold">تسجيل الدخول</Link> لتمتلك صلاحية الكتابة.
+                برجاء الدخول لحساب المشرف الخاص بك أولاً عبر صفحة <Link to="/auth" className="underline font-bold text-emerald-600 hover:underline">تسجيل الدخول</Link> لتمتلك صلاحية الكتابة.
               </p>
             )}
+          </div>
+
+          {/* Troubleshooting Guidelines (Always visible but highlighted on failure) */}
+          <div className={`p-6 rounded-2xl border transition-all duration-300 ${
+            collections.some(c => c.status === 'failed' || c.status === 'partial')
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 ring-2 ring-red-500/20'
+              : 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800'
+          }`}>
+            <h3 className="font-black text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
+              <HelpCircle className="text-red-500 shrink-0" size={18} />
+              <span>دليل حل مشكلة الفشل (Permission Denied)</span>
+            </h3>
+            
+            <div className="space-y-4 text-xs md:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              <div>
+                <p className="font-bold text-slate-700 dark:text-slate-200 mb-1">١. تفعيل Auth في Firebase Console:</p>
+                <p className="text-xs">تأكد من تمكين مسار <strong>Email/Password</strong> و <strong>Google</strong> في تبويب Authentication داخل لوحة تحكم مشروع Firebase الخاص بك.</p>
+              </div>
+
+              <div>
+                <p className="font-bold text-slate-700 dark:text-slate-200 mb-1">٢. تعديل قواعد الحماية (Rules):</p>
+                <p className="text-xs mb-2">قواعد الحماية تمنع الكتابة العامة حالياً لمنع من يعبث بقاعدتك. اذهب إلى <strong>Console &gt; Firestore &gt; Rules</strong> وضع القواعد التالية مؤقتاً لتسمح للبرنامج بكتابة القائمة الأساسية:</p>
+                <div className="bg-slate-900 text-slate-100 p-2.5 rounded-xl font-mono text-[10px] select-all overflow-x-auto border border-slate-800">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`}
+                </div>
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold mt-1.5">⚠️ تذكر: أعد تنشيط قواعد الحماية الأصلية فور انتهاء الاستيراد لحماية وخصوصية حسابات ومعلومات المستخدمين.</p>
+              </div>
+
+              <div>
+                <p className="font-bold text-slate-700 dark:text-slate-200 mb-1">٣. تسجيل الدخول عبر التطبيق أولاً:</p>
+                <p className="text-xs">إذا قمت بتثبيت القواعد الصارمة، يجب عليك النقر على <Link to="/auth" className="underline font-bold text-emerald-600 hover:underline">تسجيل الدخول</Link> واستعمال حساب Google بالبريد <code>{currentUser?.email || 'omarmagedugm@gmail.com'}</code> ليتم منحك دور المشرف الأعلى للكتابة.</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -208,6 +248,9 @@ export default function DbSetup() {
                       <div>
                         <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">{col.label}</h3>
                         <p className="text-xs text-slate-400 font-medium">قاعدة البيانات: {col.name}</p>
+                        {col.errorMsg && (
+                          <p className="text-xs text-red-500 font-medium mt-1 font-mono max-w-xs break-words">{col.errorMsg}</p>
+                        )}
                       </div>
                     </div>
 
