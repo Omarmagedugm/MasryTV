@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { initializeFirestore, doc, getDocFromServer, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { initializeFirestore, doc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import { getDatabase } from 'firebase/database';
@@ -60,7 +60,7 @@ export function handleFirestoreError(error: any, operationType: OperationType, p
   const isQuotaExceeded = errCode === 'resource-exhausted' || errStr.toLowerCase().includes('quota');
 
   if (isRead && (isUnavailable || isQuotaExceeded)) {
-    console.warn(`Firestore [${path}] temporarily unavailable. Operating in offline/quota-exceeded mode.`, errInfo);
+    console.warn(`Firestore [${path}] temporarily unavailable.`, errInfo);
     return;
   }
 
@@ -71,12 +71,7 @@ export function handleFirestoreError(error: any, operationType: OperationType, p
   }
 
   console.error(`Firestore Error [${path}]: `, JSON.stringify(errInfo));
-  if (isQuotaExceeded) {
-     console.warn("Quota Exceeded. Application degraded.");
-  }
 
-  // If this is a write/mutation operation (not a read), throw the error so that callers 
-  // (like form submit handlers) are aware of the write failure and can react accordingly.
   if (!isRead) {
     throw new Error(errStr);
   }
@@ -85,9 +80,7 @@ export function handleFirestoreError(error: any, operationType: OperationType, p
 export function handleStorageError(error: any, path: string) {
   const errInfo = {
     error: error?.message || error?.code || String(error),
-    authInfo: {
-      userId: getAuth().currentUser?.uid,
-    },
+    authInfo: { userId: getAuth().currentUser?.uid },
     operationType: 'UPLOAD',
     path
   };
@@ -115,15 +108,11 @@ console.log('Firebase Configuration Check:', {
 
 const app = initializeApp(firebaseConfig);
 
-// Using initializeFirestore with persistent local cache and experimental settings to improve connectivity in restricted environments
 const firestoreDbId = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
   ? firebaseConfig.firestoreDatabaseId 
   : undefined;
 
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  }),
   experimentalForceLongPolling: true,
 }, firestoreDbId);
 
@@ -148,7 +137,7 @@ const initializeMessaging = async () => {
       return messagingInstance;
     }
   } catch (e) {
-    console.warn("Firebase Messaging initialization failed (expected in some environments):", e);
+    console.warn("Firebase Messaging initialization failed:", e);
   }
   return null;
 };
@@ -157,16 +146,14 @@ initializeMessaging();
 
 async function testConnection() {
   try {
-    // Avoid getDocFromServer for the initial test as it's too aggressive and fails immediately if handshake hasn't finished
-    const { getDoc } = await import('firebase/firestore');
     await getDoc(doc(db, 'test', 'connection'));
     console.info('Firestore connection test initiated.');
   } catch (error: any) {
     const errStr = error?.message || '';
     if (errStr.includes('offline') || error?.code === 'unavailable') {
-      console.warn("Firestore is currently in offline mode. It will sync automatically once a connection is established.");
+      console.warn("Firestore offline mode.");
     } else {
-       console.error("Firestore connectivity issue:", error);
+      console.error("Firestore connectivity issue:", error?.message);
     }
   }
 }
@@ -183,14 +170,11 @@ export const requestNotificationPermission = async () => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      // Get service worker registration
       let registration;
       if ('serviceWorker' in navigator) {
         registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
         if (!registration) {
-          registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-            scope: '/'
-          });
+          registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
         }
       }
 
@@ -200,12 +184,9 @@ export const requestNotificationPermission = async () => {
       });
       
       if (currentToken) {
-        console.log('FCM Token generated:', currentToken);
-        const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+        const { doc: firestoreDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
         const user = getAuth().currentUser;
-        
-        // Save token with more metadata
-        await setDoc(doc(db, 'fcm_tokens', currentToken), {
+        await setDoc(firestoreDoc(db, 'fcm_tokens', currentToken), {
           token: currentToken,
           userId: user ? user.uid : 'anonymous',
           lastSeen: serverTimestamp(),
