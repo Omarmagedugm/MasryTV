@@ -97,7 +97,13 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfigJson.messagingSenderId,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigJson.appId,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || firebaseConfigJson.measurementId,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || "(default)"
+  firestoreDatabaseId: (() => {
+    const envId = import.meta.env.VITE_FIREBASE_DATABASE_ID;
+    const jsonId = firebaseConfigJson.firestoreDatabaseId;
+    if (envId && envId !== '(default)' && envId !== 'default') return envId;
+    if (jsonId && jsonId !== '(default)' && jsonId !== 'default') return jsonId;
+    return '(default)';
+  })()
 };
 
 console.log('Firebase Configuration Check:', {
