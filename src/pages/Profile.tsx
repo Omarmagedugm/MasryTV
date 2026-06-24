@@ -12,7 +12,7 @@ import DigitalFanID from '../components/DigitalFanID';
 import { getOptimizedImage } from '../lib/cloudinary';
 
 export default function Profile() {
-  const { profile, theme, toggleTheme, users, fanPosts, predictions } = useAppStore();
+  const { profile, theme, toggleTheme, users, usersCount, fanPosts, predictions } = useAppStore();
   const updateProfile = useAppStore(state => state.updateProfile);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -321,8 +321,8 @@ export default function Profile() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined font-variation-settings-fill">group</span>
             </div>
-            <span className="mt-1 text-2xl font-black text-slate-900 dark:text-white tabular-nums">{Math.max(users.length, 12)}</span>
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">المتابعين</span>
+            <span className="mt-1 text-2xl font-black text-slate-900 dark:text-white tabular-nums">{Math.max(usersCount || users.length, 12)}</span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">الأعضاء المسجلين</span>
           </div>
         </motion.div>
 

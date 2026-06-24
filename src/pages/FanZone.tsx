@@ -63,7 +63,7 @@ import {
 
 export default function FanZone() {
   const matches = useResolvedMatches();
-  const { polls, clubs, profile, fanPosts, predictions, users } = useAppStore();
+  const { polls, clubs, profile, fanPosts, predictions, users, usersCount } = useAppStore();
   
   // High-level admin check
   const isAnonymous = !auth.currentUser || auth.currentUser.isAnonymous;
@@ -1350,7 +1350,7 @@ export default function FanZone() {
                 <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-background-dark rounded-full shadow-inner ring-1 ring-border-light dark:ring-border-dark">
                   <Users size={12} className="text-primary" />
                   <span className="text-[10px] font-black tabular-nums text-slate-600 dark:text-slate-300 uppercase">
-                    {Math.max(activeCount, users.length > 0 ? Math.floor(users.length / 2) : 12)} Online
+                    {Math.max(activeCount, (usersCount || users.length) > 0 ? Math.floor((usersCount || users.length) / 2) : 12)} Online
                   </span>
                 </div>
               </div>

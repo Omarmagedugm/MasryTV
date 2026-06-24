@@ -15,8 +15,10 @@
         var img = new Image();
         img.onerror = function() {
           var fallback = 'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Al_Masry_SC_logo.svg/1200px-Al_Masry_SC_logo.svg.png';
-          document.querySelector('link[rel="icon"]').href = fallback;
-          document.querySelector('link[rel="apple-touch-icon"]').href = fallback;
+          var icon = document.querySelector('link[rel="icon"]');
+          if (icon) icon.href = fallback;
+          var appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+          if (appleIcon) appleIcon.href = fallback;
         };
         img.src = '/icon.png?v=2';
       })();

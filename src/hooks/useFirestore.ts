@@ -6,7 +6,7 @@ import { useAppStore } from '../store';
 export function useFirestoreSync() {
   const { 
     setNews, setMedia, setMatches, setClubs, setPolls, setPredictions, setFanPosts,
-    setUsers, setSettings, updateLiveStream, updateProfile, setCityInfo, setAds, setCustomPages,
+    setUsers, setUsersCount, setSettings, updateLiveStream, updateProfile, setCityInfo, setAds, setCustomPages,
     setNewsCategories, setNewsTags, setHomeSections, setProducts, setSongs, setAlbums, setPlaylists, setMediaPlaylists, setBooks,
     setClubStats, setClubTitles, setHistoryEvents, setStadiums
   } = useAppStore();
@@ -41,6 +41,9 @@ export function useFirestoreSync() {
           if (data.city_info && data.city_info.length > 0) {
             const portsaidInfo = data.city_info.find((item: any) => item.id === 'portsaid') || data.city_info[0];
             if (portsaidInfo) setCityInfo(portsaidInfo);
+          }
+          if (data.users && data.users.length > 0) {
+            setUsersCount(data.users.length);
           }
           if (data.settings) {
             const globalSettings = data.settings.find((item: any) => item.id === 'global');
@@ -106,9 +109,28 @@ export function useFirestoreSync() {
       const now = Date.now();
       
       if (!lastUpdate || now - parseInt(lastUpdate) > 4 * 60 * 60 * 1000) {
-        updateDoc(doc(db, 'users', currentUser.uid), { lastActive: new Date().toISOString() })
-          .then(() => localStorage.setItem(lastUpdateKey, now.toString()))
-          .catch(err => console.error('Failed to update activity:', err));
+        getDoc(doc(db, 'users', currentUser.uid))
+          .then((snap) => {
+            if (snap.exists()) {
+              updateDoc(doc(db, 'users', currentUser.uid), { lastActive: new Date().toISOString() })
+                .then(() => localStorage.setItem(lastUpdateKey, now.toString()))
+                .catch(err => console.error('Failed to update activity:', err));
+            } else {
+              setDoc(doc(db, 'users', currentUser.uid), {
+                uid: currentUser.uid,
+                email: currentUser.email || '',
+                displayName: currentUser.displayName || '',
+                photoURL: currentUser.photoURL || '',
+                role: 'user',
+                tier: 'free',
+                lastActive: new Date().toISOString(),
+                createdAt: new Date().toISOString()
+              })
+                .then(() => localStorage.setItem(lastUpdateKey, now.toString()))
+                .catch(err => console.error('Failed to initialize user document:', err));
+            }
+          })
+          .catch(err => console.error('Failed to check user document existence:', err));
       }
 
       unsubProfile = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
@@ -138,6 +160,7 @@ export function useFirestoreSync() {
               .then(snap => {
                 const fetchedUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
                 setUsers(fetchedUsers);
+                setUsersCount(fetchedUsers.length);
               })
               .catch(err => console.error('Failed to fetch members list dynamically:', err));
 
@@ -369,6 +392,18 @@ export function useFirestoreSync() {
         fetchCol('products', setProducts);
         fetchCol('ads', setAds, query(collection(db, 'ads'), where('active', '==', true), orderBy('order', 'asc')));
         fetchCol('custom_pages', setCustomPages);
+        
+        // Fetch total members count securely via getCountFromServer
+        try {
+          const { getCountFromServer } = await import('firebase/firestore');
+          getCountFromServer(collection(db, 'users'))
+            .then(snap => {
+              setUsersCount(snap.data().count);
+            })
+            .catch(err => console.warn('Failed to fetch total users count securely:', err));
+        } catch (e) {
+          console.warn('Failed to import getCountFromServer:', e);
+        }
         
       } catch (error) {
         handleFirestoreError(error, OperationType.GET, 'static_data');

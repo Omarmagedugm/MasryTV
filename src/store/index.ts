@@ -296,6 +296,7 @@ interface AppState {
   predictions: PredictionItem[];
   fanPosts: FanPostItem[];
   users: UserProfile[];
+  usersCount: number;
   appSettings: {
     appName: string;
     appLogo: string;
@@ -349,6 +350,7 @@ interface AppState {
   setPredictions: (predictions: PredictionItem[]) => void;
   setFanPosts: (posts: FanPostItem[]) => void;
   setUsers: (users: UserProfile[]) => void;
+  setUsersCount: (count: number) => void;
   updateUser: (uid: string, item: Partial<UserProfile>) => void;
   deleteUser: (uid: string) => void;
   setSettings: (settings: any) => void;
@@ -535,6 +537,7 @@ export const useAppStore = create<AppState>()(
       predictions: [],
       fanPosts: [],
       users: [],
+      usersCount: 0,
       appSettings: {
         appName: 'قناة المصري البورسعيدي',
         appLogo: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/Al_Masry_SC_logo.svg/1200px-Al_Masry_SC_logo.svg.png',
@@ -625,6 +628,7 @@ export const useAppStore = create<AppState>()(
       setPredictions: (predictions) => set({ predictions }),
       setFanPosts: (posts) => set({ fanPosts: posts }),
       setUsers: (users) => set({ users }),
+      setUsersCount: (usersCount) => set({ usersCount }),
       updateUser: (uid, updatedItem) => set((state) => ({
         users: state.users.map(u => u.uid === uid ? { ...u, ...updatedItem } : u)
       })),
@@ -676,7 +680,7 @@ export const useAppStore = create<AppState>()(
       name: 'masry-app-storage',
       partialize: (state) => {
         const {
-          news, media, matches, clubs, polls, predictions, fanPosts, users,
+          news, media, matches, clubs, polls, predictions, fanPosts, users, usersCount,
           appSettings, liveStream, theme, profile, clubTitles, clubStats,
           historyEvents, stadiums, newsCategories, newsTags, products, orders,
           ads, customPages, homeSections, songs, albums, playlists,
@@ -684,7 +688,7 @@ export const useAppStore = create<AppState>()(
           stadiumOpacity, activePlaylist
         } = state;
         return {
-          news, media, matches, clubs, polls, predictions, fanPosts, users,
+          news, media, matches, clubs, polls, predictions, fanPosts, users, usersCount,
           appSettings, liveStream, theme, profile, clubTitles, clubStats,
           historyEvents, stadiums, newsCategories, newsTags, products, orders,
           ads, customPages, homeSections, songs, albums, playlists,

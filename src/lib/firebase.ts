@@ -124,26 +124,65 @@ const getEnvVarOptional = (key: string): string | undefined => {
 
 const authDomainEnv = getEnvVarOptional('VITE_FIREBASE_AUTH_DOMAIN');
 const apiKeyEnv = getEnvVarOptional('VITE_FIREBASE_API_KEY');
+const projectIdEnv = getEnvVarOptional('VITE_FIREBASE_PROJECT_ID');
 
-const useCustomProject = (authDomainEnv && authDomainEnv.includes('masrytv-be1be')) || 
-                           (apiKeyEnv && apiKeyEnv === 'AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0') ||
-                           (!authDomainEnv && !getEnvVarOptional('VITE_FIREBASE_PROJECT_ID')?.includes('gen-lang'));
+// Check hostname to determine environment in browser contexts
+const getHostname = (): string => {
+  if (typeof window !== 'undefined' && window.location) {
+    return window.location.hostname;
+  }
+  return '';
+};
 
-const firebaseConfig = useCustomProject
-  ? {
-      apiKey: apiKeyEnv || "AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0",
-      authDomain: authDomainEnv || "masrytv-be1be.firebaseapp.com",
-      databaseURL: getEnvVar('VITE_FIREBASE_DATABASE_URL', "https://masrytv-be1be-default-rtdb.firebaseio.com"),
-      projectId: "masrytv-be1be",
-      storageBucket: (getEnvVarOptional('VITE_FIREBASE_STORAGE_BUCKET')?.includes('masrytv-be1be') 
-        ? import.meta.env.VITE_FIREBASE_STORAGE_BUCKET.trim() 
-        : "masrytv-be1be.appspot.com"),
-      messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', "725960187583"),
-      appId: getEnvVar('VITE_FIREBASE_APP_ID', "1:725960187583:web:da952e463a8be708e0da41"),
-      measurementId: getEnvVar('VITE_FIREBASE_MEASUREMENT_ID', "G-W63RX2JFBJ"),
-      firestoreDatabaseId: getEnvVar('VITE_FIREBASE_DATABASE_ID', "ai-studio-2920c89a-8645-4d45-82be-73df68cc5f06")
+const hostname = getHostname();
+const isSandboxEnv = hostname.includes('europe-west2.run.app') || 
+                     hostname.includes('gen-lang') || 
+                     hostname.includes('localhost') || 
+                     hostname.includes('127.0.0.1');
+
+// Use completely dynamic environment variables if they are provided,
+// otherwise fall back to either custom project (if requested or in prod) or sandbox config.
+const hasEnvConfig = !!apiKeyEnv && !!projectIdEnv;
+
+// In the AI Studio preview environment, we support toggling between the sandbox preview database
+// and the custom production database (masrytv-be1be) where the user's real members/data are.
+// We default to the custom production database if configured via environment variables.
+const getDbChoice = (): 'production' | 'sandbox' | null => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const choice = window.localStorage.getItem('firebase_db_choice');
+    if (choice === 'production' || choice === 'sandbox') {
+      return choice as 'production' | 'sandbox';
     }
-  : genLangConfig;
+  }
+  return null;
+};
+
+const dbChoice = getDbChoice();
+
+const isExplicitCustom = (authDomainEnv && authDomainEnv.includes('masrytv-be1be')) || 
+                         (apiKeyEnv && apiKeyEnv === 'AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0') ||
+                         (projectIdEnv === 'masrytv-be1be');
+
+export const isUsingProductionDb = dbChoice === 'production' || 
+                                   (dbChoice !== 'sandbox' && !isSandboxEnv);
+
+let firebaseConfig;
+
+if (isUsingProductionDb) {
+  firebaseConfig = {
+    apiKey: "AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0",
+    authDomain: "masrytv-be1be.firebaseapp.com",
+    databaseURL: "https://masrytv-be1be-default-rtdb.firebaseio.com",
+    projectId: "masrytv-be1be",
+    storageBucket: "masrytv-be1be.appspot.com",
+    messagingSenderId: "725960187583",
+    appId: "1:725960187583:web:da952e463a8be708e0da41",
+    measurementId: "G-W63RX2JFBJ",
+    firestoreDatabaseId: "(default)"
+  };
+} else {
+  firebaseConfig = genLangConfig;
+}
 
 const app = initializeApp(firebaseConfig);
 

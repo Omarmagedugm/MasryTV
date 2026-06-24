@@ -19,7 +19,23 @@ const customConfig = {
   appId: "1:725960187583:web:da952e463a8be708e0da41"
 };
 
-firebase.initializeApp(customConfig);
+// Dynamically choose configuration based on self.location hostname
+const getFirebaseConfig = () => {
+  const hostname = self.location.hostname;
+  
+  // If we are in the development container, preview sandbox, or localhost, default to the sandbox config
+  if (hostname.includes('europe-west2.run.app') || 
+      hostname.includes('gen-lang') || 
+      hostname.includes('localhost') || 
+      hostname.includes('127.0.0.1')) {
+    return genLangConfig;
+  }
+  
+  // For production or hostinger/vercel without env variables
+  return customConfig;
+};
+
+firebase.initializeApp(getFirebaseConfig());
 
 const messaging = firebase.messaging();
 

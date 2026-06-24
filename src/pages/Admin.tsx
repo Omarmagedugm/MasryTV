@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useAppStore, AppRole } from '../store';
 import { v4 as uuidv4 } from 'uuid';
 import { toDate, formatInTimeZone, fromZonedTime } from 'date-fns-tz';
-import { db, auth, uploadImage, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, auth, uploadImage, handleFirestoreError, OperationType, isUsingProductionDb } from '../lib/firebase';
 import { 
   collection, 
   getDocs,
@@ -2445,6 +2445,43 @@ export default function Admin() {
 
           {activeTab === 'overview' && (
             <div className="space-y-8">
+              {/* Database Connection Toggle Card */}
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-surface-dark dark:to-card-dark p-6 rounded-[32px] border border-border-light dark:border-border-dark flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isUsingProductionDb ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                    <Database size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-base flex flex-wrap items-center gap-2">
+                      اتصال قاعدة البيانات:
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${isUsingProductionDb ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+                        {isUsingProductionDb ? 'قاعدة بيانات الإنتاج الأساسية (masrytv-be1be)' : 'قاعدة بيانات المعاينة المؤقتة (AI Studio)'}
+                      </span>
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">
+                      {isUsingProductionDb 
+                        ? 'أنت متصل بقاعدة البيانات الرئيسية للإنتاج. جميع الأعضاء والبيانات الحقيقية معروضة هنا.' 
+                        : 'أنت متصل بقاعدة بيانات المعاينة النظيفة لبيئة التطوير. يمكنك التبديل للإنتاج لعرض الأعضاء الحقيقيين.'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  id="db-toggle-btn"
+                  onClick={() => {
+                    const nextChoice = isUsingProductionDb ? 'sandbox' : 'production';
+                    localStorage.setItem('firebase_db_choice', nextChoice);
+                    toast.success('جاري تغيير الاتصال بقاعدة البيانات وإعادة التشغيل...');
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
+                  }}
+                  className="px-5 py-2.5 rounded-2xl font-black text-xs transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer flex items-center gap-2 bg-primary text-white hover:bg-primary-dark"
+                >
+                  <Database size={14} />
+                  التبديل إلى {isUsingProductionDb ? 'قاعدة المعاينة' : 'قاعدة بيانات الإنتاج'}
+                </button>
+              </div>
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                  <div className="bg-white dark:bg-card-dark p-6 rounded-[32px] border border-border-light dark:border-border-dark flex flex-col gap-2 shadow-sm hover:shadow-xl transition-all duration-300">
                     <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center text-primary mb-2">
