@@ -94,16 +94,36 @@ export function handleStorageError(error: any, path: string) {
   throw new Error(`STORAGE_ERROR: ${errInfo.error}`);
 }
 
+const firebaseConfigJson = {
+  apiKey: "AIzaSyAHBnY47VrR4L4i9dRDhPdyYKE2GadvZAs",
+  authDomain: "gen-lang-client-0195841357.firebaseapp.com",
+  databaseURL: "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "gen-lang-client-0195841357",
+  storageBucket: "gen-lang-client-0195841357.firebasestorage.app",
+  messagingSenderId: "783975227149",
+  appId: "1:783975227149:web:a222c629a5212da0d19a44",
+  measurementId: "",
+  firestoreDatabaseId: "ai-studio-2920c89a-8645-4d45-82be-73df68cc5f06"
+};
+
+const getEnvVar = (key: string, fallback: string): string => {
+  const value = import.meta.env[key];
+  if (!value || typeof value !== 'string' || value === 'undefined' || value === 'null' || value.trim() === '') {
+    return fallback;
+  }
+  return value.trim();
+};
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigJson.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigJson.authDomain,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || (firebaseConfigJson as any).databaseURL || "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigJson.projectId,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfigJson.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfigJson.messagingSenderId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigJson.appId,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || firebaseConfigJson.measurementId,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigJson.firestoreDatabaseId || "(default)"
+  apiKey: getEnvVar('VITE_FIREBASE_API_KEY', firebaseConfigJson.apiKey),
+  authDomain: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', firebaseConfigJson.authDomain),
+  databaseURL: getEnvVar('VITE_FIREBASE_DATABASE_URL', firebaseConfigJson.databaseURL),
+  projectId: getEnvVar('VITE_FIREBASE_PROJECT_ID', firebaseConfigJson.projectId),
+  storageBucket: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', firebaseConfigJson.storageBucket),
+  messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', firebaseConfigJson.messagingSenderId),
+  appId: getEnvVar('VITE_FIREBASE_APP_ID', firebaseConfigJson.appId),
+  measurementId: getEnvVar('VITE_FIREBASE_MEASUREMENT_ID', firebaseConfigJson.measurementId),
+  firestoreDatabaseId: getEnvVar('VITE_FIREBASE_DATABASE_ID', firebaseConfigJson.firestoreDatabaseId)
 };
 
 const app = initializeApp(firebaseConfig);

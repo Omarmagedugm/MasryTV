@@ -170,15 +170,18 @@ export default function Profile() {
   };
 
   // High-level admin/editor check
-  const isOmar = auth.currentUser?.email?.toLowerCase() === 'omarmagedugm@gmail.com' || 
-                 auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@gmail.com' ||
-                 auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@masry.club' ||
-                 auth.currentUser?.email?.toLowerCase()?.startsWith('itthadalexchannel2@') ||
-                 profile?.username?.toLowerCase() === 'itthadalexchannel2';
-  const isDev = auth.currentUser?.email?.toLowerCase() === 'copyrightofficialco@gmail.com';
-  const hasCustomRoles = profile.roles && profile.roles.length > 0;
-  const isAdmin = profile.role === 'admin' || isOmar || isDev;
-  const isStaff = isAdmin || profile.role === 'writer' || profile.role === 'moderator' || hasCustomRoles;
+  const isAnonymous = !auth.currentUser || auth.currentUser.isAnonymous;
+  const isOmar = !isAnonymous && (
+    auth.currentUser?.email?.toLowerCase() === 'omarmagedugm@gmail.com' || 
+    auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@gmail.com' ||
+    auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@masry.club' ||
+    auth.currentUser?.email?.toLowerCase()?.startsWith('itthadalexchannel2@') ||
+    profile?.username?.toLowerCase() === 'itthadalexchannel2'
+  );
+  const isDev = !isAnonymous && auth.currentUser?.email?.toLowerCase() === 'copyrightofficialco@gmail.com';
+  const hasCustomRoles = !isAnonymous && profile?.roles && profile.roles.length > 0;
+  const isAdmin = !isAnonymous && (profile?.role === 'admin' || isOmar || isDev);
+  const isStaff = !isAnonymous && (isAdmin || profile?.role === 'writer' || profile?.role === 'moderator' || hasCustomRoles);
 
   const handleLogout = async () => {
     try {

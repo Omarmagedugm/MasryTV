@@ -699,28 +699,33 @@ export default function Admin() {
   }, [location.state, news, media, matches]);
 
   // Security check
-  const isDev = auth.currentUser?.email?.toLowerCase() === 'copyrightofficialco@gmail.com' || 
-                auth.currentUser?.email?.toLowerCase() === 'omarmagedugm@gmail.com' ||
-                auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@gmail.com' ||
-                auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@masry.club' ||
-                auth.currentUser?.email?.toLowerCase()?.startsWith('itthadalexchannel2@') ||
-                profile?.username?.toLowerCase() === 'itthadalexchannel2';
+  const isAnonymous = !auth.currentUser || auth.currentUser.isAnonymous;
+  const isDev = !isAnonymous && (
+    auth.currentUser?.email?.toLowerCase() === 'copyrightofficialco@gmail.com' || 
+    auth.currentUser?.email?.toLowerCase() === 'omarmagedugm@gmail.com' ||
+    auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@gmail.com' ||
+    auth.currentUser?.email?.toLowerCase() === 'itthadalexchannel2@masry.club' ||
+    auth.currentUser?.email?.toLowerCase()?.startsWith('itthadalexchannel2@') ||
+    profile?.username?.toLowerCase() === 'itthadalexchannel2'
+  );
   
   const hasPermission = (roles: AppRole | AppRole[]) => {
+    if (isAnonymous) return false;
     if (isDev) return true;
-    if (profile.role === 'admin') return true;
-    const userRoles = [...(profile.roles || [])];
+    if (profile?.role === 'admin') return true;
+    const userRoles = [...(profile?.roles || [])];
     
     // Legacy support for writer/moderator roles
-    if (profile.role === 'writer') userRoles.push('news_editor');
-    if (profile.role === 'moderator') userRoles.push('user_manager');
+    if (profile?.role === 'writer') userRoles.push('news_editor');
+    if (profile?.role === 'moderator') userRoles.push('user_manager');
     
     const requiredRoles = Array.isArray(roles) ? roles : [roles];
     return requiredRoles.some(r => userRoles.includes(r));
   };
 
   const isTabAllowed = (tab: string) => {
-    if (isDev || profile.role === 'admin') return true;
+    if (isAnonymous) return false;
+    if (isDev || profile?.role === 'admin') return true;
     if (tab === 'overview') return true;
     
     const roleMap: Record<string, AppRole[]> = {
@@ -754,8 +759,8 @@ export default function Admin() {
   };
 
   // If Omar or Dev, they are always admin in UI regardless of DB role
-  const effectiveRole = isDev ? 'admin' : profile.role;
-  const isAdminOrWriter = isDev || profile.role === 'admin' || (profile.roles && profile.roles.length > 0) || profile.role === 'writer' || profile.role === 'moderator';
+  const effectiveRole = isDev ? 'admin' : profile?.role;
+  const isAdminOrWriter = !isAnonymous && (isDev || profile?.role === 'admin' || (profile?.roles && profile.roles.length > 0) || profile?.role === 'writer' || profile?.role === 'moderator');
 
   if (!isAdminOrWriter) {
     return (

@@ -29,8 +29,15 @@ export default function Sidebar({ isOpen, onClose, profile }: SidebarProps) {
                  auth.currentUser?.email?.toLowerCase()?.startsWith('itthadalexchannel2@') ||
                  profile?.username?.toLowerCase() === 'itthadalexchannel2';
   const isDev = auth.currentUser?.email?.toLowerCase() === 'copyrightofficialco@gmail.com';
-  const isAdmin = profile.role === 'admin' || profile.role === 'writer' || (profile.roles && profile.roles.length > 0) || isOmar || isDev;
   const isAnonymous = !auth.currentUser || auth.currentUser.isAnonymous;
+  const isAdmin = !isAnonymous && (
+    profile?.role === 'admin' || 
+    profile?.role === 'writer' || 
+    profile?.role === 'moderator' || 
+    (profile?.roles && profile.roles.length > 0) || 
+    isOmar || 
+    isDev
+  );
 
   const handleLogout = async () => {
     try {
