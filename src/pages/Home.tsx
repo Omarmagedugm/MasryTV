@@ -40,6 +40,7 @@ import {
   StopCircle,
   CheckCircle2,
   Sparkles,
+  X,
 } from "lucide-react";
 import { onSnapshot, doc } from "firebase/firestore";
 import Sidebar from "../components/Sidebar";
@@ -98,6 +99,7 @@ export default function Home() {
     isDay?: boolean;
   } | null>(null);
   const navigate = useNavigate();
+  const [activePolicyModal, setActivePolicyModal] = useState<"privacy" | "terms" | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTick((t) => t + 1), 1000);
@@ -1623,7 +1625,125 @@ export default function Home() {
             </div>
           );
         })}
+
+        {/* Privacy Policy and Terms of Use Links */}
+        <div className="mt-8 mb-4 text-center text-[10px] text-slate-400 dark:text-slate-500 font-bold select-none">
+          <div className="flex justify-center items-center gap-2.5">
+            <button
+              onClick={() => setActivePolicyModal("privacy")}
+              className="hover:text-primary dark:hover:text-primary transition-colors duration-200 cursor-pointer"
+            >
+              سياسة الخصوصية
+            </button>
+            <span className="text-slate-300 dark:text-slate-800">|</span>
+            <button
+              onClick={() => setActivePolicyModal("terms")}
+              className="hover:text-primary dark:hover:text-primary transition-colors duration-200 cursor-pointer"
+            >
+              شروط الاستخدام
+            </button>
+          </div>
+          <p className="mt-1 opacity-75">جميع الحقوق محفوظة © قناة المصري {new Date().getFullYear()}</p>
+        </div>
       </motion.main>
+
+      {/* Policies Modals */}
+      <AnimatePresence>
+        {activePolicyModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            onClick={() => setActivePolicyModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 15, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-sm bg-white dark:bg-card-dark rounded-[32px] border border-border-light dark:border-border-dark p-6 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-border-light dark:border-border-dark">
+                <h3 className="font-black text-lg text-primary">
+                  {activePolicyModal === "privacy" ? "سياسة الخصوصية" : "شروط الاستخدام"}
+                </h3>
+                <button
+                  onClick={() => setActivePolicyModal(null)}
+                  className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto py-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300 font-bold space-y-4 pr-1 text-right" style={{ direction: "rtl" }}>
+                {activePolicyModal === "privacy" ? (
+                  <>
+                    <p className="text-primary text-[13px] font-black mb-1">مرحباً بكم في تطبيق قناة المصري</p>
+                    <p>نحن في "قناة المصري" نولي أهمية قصوى لخصوصيتكم وحماية بياناتكم الشخصية. توضح هذه السياسة كيف نقوم بجمع واستخدام وحفظ البيانات الخاصة بكم عند استخدامكم للتطبيق.</p>
+                    
+                    <p className="text-primary text-[11px] font-black mt-3">1. جمع البيانات والمعلومات</p>
+                    <p>نقوم بحفظ تفضيلاتكم الشخصية محلياً في جهازكم (مثل إعدادات المظهر الداكن/الفاتح وقوائم التفضيلات والأخبار المحفوظة). عند قيامكم بإنشاء حساب أو تسجيل الدخول، يتم حفظ البريد الإلكتروني، والاسم المستعار، والصورة الشخصية بشكل آمن على خوادمنا السحابية المشفرة عبر منصة Google Firebase لتوفير مزامنة حية لبياناتكم وتفاعلاتكم.</p>
+                    
+                    <p className="text-primary text-[11px] font-black mt-3">2. استخدام المعلومات</p>
+                    <p>تُستخدم بياناتكم فقط وحصرياً من أجل:</p>
+                    <ul className="list-disc list-inside space-y-1 pr-2">
+                      <li>• إدارة حسابكم وتخصيص تجربتكم داخل التطبيق.</li>
+                      <li>• السماح لكم بالمشاركة في "منطقة الجماهير" ونشر التعليقات والمنشورات والتصويت في الاستطلاعات وتوقعات المباريات.</li>
+                      <li>• إرسال الإشعارات والتحليلات الإخبارية العاجلة المتعلقة بالنادي المصري.</li>
+                    </ul>
+
+                    <p className="text-primary text-[11px] font-black mt-3">3. حماية وأمن البيانات</p>
+                    <p>نحن نستخدم أعلى معايير الأمان الموصى بها والمقدمة من Google Firebase لحماية حساباتكم وبياناتكم من الوصول غير المصرح به. لا نقوم إطلاقاً ببيع أو تأجير أو مشاركة بياناتكم مع أي جهة تجارية أو طرف ثالث.</p>
+
+                    <p className="text-primary text-[11px] font-black mt-3">4. ملفات التخزين المحلي (LocalStorage)</p>
+                    <p>يستخدم التطبيق تقنيات التخزين المحلي لتسريع التصفح وحفظ تفضيلات المظهر دون الحاجة للاتصال بالإنترنت بشكل مستمر.</p>
+
+                    <p className="text-primary text-[11px] font-black mt-3">5. التغييرات على السياسة</p>
+                    <p>قد نقوم بتحديث سياسة الخصوصية هذه دورياً لتتماشى مع الميزات الجديدة بالتطبيق. سيتم إشعاركم بأي تغييرات هامة داخل التطبيق.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-primary text-[13px] font-black mb-1">شروط وأحكام استخدام تطبيق قناة المصري</p>
+                    <p>باستخدامكم لتطبيق "قناة المصري"، فإنكم توافقون بالكامل على الشروط والأحكام الموضحة أدناه. يُرجى قراءتها بعناية قبل البدء في استخدام التطبيق.</p>
+                    
+                    <p className="text-primary text-[11px] font-black mt-3">1. قبول الشروط</p>
+                    <p>يخضع دخولكم واستخدامكم للتطبيق ومحتوياته بالكامل لهذه الشروط وقوانين النشر الإلكتروني المعمول بها.</p>
+                    
+                    <p className="text-primary text-[11px] font-black mt-3">2. سلوك المستخدم ومجتمع الجماهير</p>
+                    <p>نحن نسعى لبناء مجتمع رياضي راقٍ يدعم النادي المصري البورسعيدي بكل حب وروح رياضية. لذلك، يُشترط التزامكم بالآتي:</p>
+                    <ul className="list-disc list-inside space-y-1 pr-2">
+                      <li>• يمنع تماماً استخدام أي لغة بذيئة، أو نشر تعليقات أو منشورات مسيئة للأشخاص، الأندية الأخرى، أو الحكام.</li>
+                      <li>• يُمنع نشر أي محتوى يحث على التعصب الرياضي، الكراهية، أو الفتنة.</li>
+                      <li>• يُمنع انتحال شخصيات رسمية أو الترويج لمنتجات غير مصرح بها.</li>
+                    </ul>
+                    <p className="text-red-500 font-bold mt-2">ملاحظة هامة: يمتلك مشرفو التطبيق الصلاحية الكاملة لحذف أي منشور أو تعليق مخالف، وحظر حسابات المستخدمين المخالفين بشكل مؤقت أو دائم دون إنذار مسبق.</p>
+
+                    <p className="text-primary text-[11px] font-black mt-3">3. حقوق الملكية الفكرية</p>
+                    <p>جميع المواد الإخبارية، التصاميم، الصور، المؤثرات الصوتية، الفيديوهات، ومحتويات التطبيق الفنية هي ملكية فكرية خاصة بقناة المصري ومطوريها، ويُمنع نسخها أو إعادة نشرها لأغراض تجارية دون موافقة كتابية صريحة.</p>
+
+                    <p className="text-primary text-[11px] font-black mt-3">4. إخلاء المسؤولية</p>
+                    <p>يتم تقديم هذا التطبيق والخدمات المتاحة فيه كمصدر ترفيهي وإعلامي لجماهير النادي المصري. نبذل قصارى جهدنا لضمان دقة وموثوقية الأخبار ومواعيد المباريات وتفاصيل البث المباشر، ولكننا لا نتحمل المسؤولية القانونية الكاملة عن أي أخطاء غير مقصودة.</p>
+                  </>
+                )}
+              </div>
+
+              {/* Footer Button */}
+              <div className="pt-4 border-t border-border-light dark:border-border-dark flex justify-end">
+                <button
+                  onClick={() => setActivePolicyModal(null)}
+                  className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white text-xs font-black rounded-2xl cursor-pointer transition-colors duration-200"
+                >
+                  حسناً، فهمت
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
