@@ -17,8 +17,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, onSnapshot, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 
-import { GoogleGenAI } from "@google/genai";
-
 import Sidebar from '../components/Sidebar';
 
 const JerseyTryOn: React.FC = () => {
@@ -180,20 +178,10 @@ const JerseyTryOn: React.FC = () => {
     }, 100);
 
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        console.error('GEMINI_API_KEY is not defined in the environment');
-        throw new Error('Quota exceeded or API Key missing. Please try again later.');
-      }
-      
-      const ai = new GoogleGenAI({ apiKey });
-
       // Compress and convert user image
-      console.log('Compressing user image...');
       const userImageBase64 = await compressImage(userImage);
       
       // Fetch jersey image and convert to base64
-      console.log('Fetching jersey image:', selectedJersey.url);
       const responseJersey = await fetch(selectedJersey.url);
       if (!responseJersey.ok) {
         console.error('Failed to fetch jersey image:', responseJersey.statusText);
@@ -227,106 +215,36 @@ const JerseyTryOn: React.FC = () => {
         }
       }
 
-      console.log('Generating prompts...');
-      let backgroundDetail = '';
-      if (selectedBackground === 'room') {
-        backgroundDetail = `
-SCENE: STANDING IN A WARM, AUTHENTIC "PORTSAIDI FAN ROOM" (EL-NOSSOR EL-KHODR):
-- The background is a homey room belonging to a passionate Al Masry fan in Port Said.
-- Walls decorated with many green and white flags and official Al Masry SC club scarves (Masrawy).
-- Include framed photos of club legends and newspaper clippings of famous victories.
-- Modern high-contrast lighting with a soft green ambient glow.`;
-      } else if (selectedBackground === 'studio') {
-        backgroundDetail = `
-SCENE: STANDING IN A SLEEK MODERN BRANDED STUDIO:
-- Minimalist, high-end professional photo studio with a clean aesthetic.
-- A curated wall featuring a stylish arrangement of vintage club articles and newspaper clippings.
-- Artistic display of Al Masry (Masrawy) scarves and flags as cinematic backdrops.
-- Prominent Al Masry SC club logo integrated into the backlit decor.
-- Clean studio shadows and professional sports photography lighting with green neon touches.`;
-      } else if (selectedBackground === 'stadium') {
-        backgroundDetail = `
-SCENE: STANDING ON THE PITCH OF THE EGYPT PORT SAID STADIUM:
-- The background is the iconic Port Said Stadium.
-- Thousands of green and white cheering fans blurred in the background.
-- Floodlights creating a dramatic evening match atmosphere.
-- The person looks like a star player posing on the grass.`;
-      } else if (selectedBackground === 'birthday') {
-        backgroundDetail = `
-SCENE: CELEBRATING A "AL NESSOR EL-AKHDAR" THEMED BIRTHDAY:
-- Festive atmosphere with a massive green and white Al Masry birthday cake.
-- Green and white balloons everywhere.
-- A "Happy Birthday" banner with the club logo.
-- The person is holding a club scarf, looking happy in a celebration setting.`;
-      }
+      // Build background prompt
+      const backgroundPrompts: Record<string, string> = {
+        room: `\nSCENE: STANDING IN A WARM, AUTHENTIC "PORTSAIDI FAN ROOM" (EL-NOSSOR EL-KHODR):\n- Walls decorated with green and white flags and official Al Masry SC club scarves.\n- Framed photos of club legends and newspaper clippings.\n- Modern high-contrast lighting with a soft green ambient glow.`,
+        studio: `\nSCENE: STANDING IN A SLEEK MODERN BRANDED STUDIO:\n- Minimalist professional photo studio.\n- Artistic display of Al Masry scarves and flags as cinematic backdrops.\n- Prominent Al Masry SC club logo in backlit decor.\n- Professional sports photography lighting with green neon touches.`,
+        stadium: `\nSCENE: STANDING ON THE PITCH OF THE EGYPT PORT SAID STADIUM:\n- Thousands of green and white cheering fans blurred in background.\n- Floodlights creating a dramatic evening match atmosphere.`,
+        birthday: `\nSCENE: CELEBRATING A "AL NESSOR EL-AKHDAR" THEMED BIRTHDAY:\n- Green and white Al Masry birthday cake and balloons everywhere.\n- A club logo banner. The person holds a club scarf looking happy.`,
+      };
 
-      const prompt = `Perform a professional, high-end CLOTHING REPLACEMENT and FULL-BODY SCENE TRANSFORMATION.
+      const backgroundPrompt = `Perform a professional CLOTHING REPLACEMENT and FULL-BODY SCENE TRANSFORMATION.\n\nIDENTITY PRESERVATION (ABSOLUTE): Perfectly preserve the person's face, features, hair, eyes from "Customer Image". Face must be 100% IDENTICAL.\n\nBODY POSE: If portrait/half-body, generate the rest to create a full-body standing pose.\n\nJERSEY: Replace outfit with the EXACT Al Masry SC jersey from "Target Jersey". Add matching black sports pants and white sneakers. Realistic fabric textures and lighting.\n\n${backgroundPrompts[selectedBackground] || backgroundPrompts.room}\n\nSTYLE: Ultra-photorealistic sports photography. No digital artifacts.\n\nOUTPUT: Return ONLY the transformed image.`;
 
-IDENTITY PRESERVATION (ABSOLUTE): You MUST perfectly preserve the person's face, features, hair, eyes, and unique identity from "Customer Image". The face must be 100% IDENTICAL to the original. NO adjustments to facial structure.
-
-BODY POSE & FULL-BODY COMPLETION (CRITICAL): 
-1. If the "Customer Image" is a portrait or half-body, you MUST generate the rest of the body to create a full-body standing pose.
-2. Adapt the person's posture to fit the environment naturally (e.g., a fan's proud stance, a studio model pose, or an athlete's pose on the pitch).
-
-JERSEY & LOWER OUTFIT (MANDATORY):
-1. UPPER BODY: Replace the person's current outfit with the EXACT Al Masry SC (Masrawy) green and white jersey kit provided in "Target Jersey to Wear".
-2. LOWER BODY: Complete the outfit by dressing the person in matching black sports pants and clean white sneakers.
-3. FIT: The entire outfit must be PERFECTLY fitted to the person's generated body. Ensure realistic fabric textures, natural folds, and integrated lighting/shadows.
-4. BRANDING: Use the "Official Club Logo" as the mandatory reference for the crest/badge on the jersey to ensure authenticity.
-
-${backgroundDetail}
-
-STYLE: 8k resolution, ultra-photorealistic sports/studio photography. It must look like a real photograph taken with a professional DSLR camera. No digital artifacts, no AI distortions, and no collage look.
-
-OUTPUT: Return ONLY the transformed image.`;
-
-      const aiParts: any[] = [
-        { text: "Customer Image (Identity to preserve):" },
-        { inlineData: { data: userImageBase64, mimeType: 'image/jpeg' } },
-        { text: "Target Jersey to Wear:" },
-        { inlineData: { data: jerseyImageBase64, mimeType: 'image/jpeg' } }
-      ];
-
-      if (logoImageBase64) {
-        aiParts.push({ text: "Official Club Logo (Brand Reference):" });
-        aiParts.push({ inlineData: { data: logoImageBase64, mimeType: 'image/jpeg' } });
-      }
-
-      aiParts.push({ text: prompt });
-
-      console.log('Calling Gemini AI (Image Model)...');
-      // Using gemini-2.5-flash-image as the general image editing model
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: {
-          parts: aiParts
-        },
-        config: {
-          imageConfig: {
-            aspectRatio: "3:4"
-          }
-        }
+      // Call server-side API (keeps GEMINI_API_KEY secure on the server)
+      const serverResponse = await fetch('/api/ai/jersey-tryon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userImageBase64, jerseyImageBase64, logoImageBase64, backgroundPrompt }),
       });
 
-      // Find the image part in the response
-      let generatedImageBase64 = '';
-      if (response.candidates?.[0]?.content?.parts) {
-        for (const part of response.candidates[0].content.parts) {
-          if (part.inlineData?.data) {
-            generatedImageBase64 = part.inlineData.data;
-            break;
-          }
-        }
+      const serverData = await serverResponse.json();
+
+      if (!serverResponse.ok) {
+        throw new Error(serverData.error || 'فشل الاتصال بخدمة الذكاء الاصطناعي');
       }
+
+      const generatedImageBase64 = serverData.imageBase64;
 
       if (generatedImageBase64) {
         setResultImage(`data:image/jpeg;base64,${generatedImageBase64}`);
         toast.success('تمت العملية بنجاح! نورت استوديو النسور الخضراء');
       } else {
-        // If no image was found, check if there was text that explained why
-        const responseText = response.text || '';
-        console.warn('AI Response did not contain an image. Text response:', responseText);
-        throw new Error(responseText || 'لم نتمكن من الحصول على صورة من الذكاء الاصطناعي. قد يكون ذلك بسبب سياسات السلامة.');
+        throw new Error('لم نتمكن من الحصول على صورة من الذكاء الاصطناعي. قد يكون ذلك بسبب سياسات السلامة.');
       }
 
     } catch (error: any) {

@@ -30,8 +30,8 @@ export default function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>(previewImageUrl);
 
-  const CLOUD_NAME = 'dqj6gzwfg';
-  const UPLOAD_PRESET = 'uhicj3ig';
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dqj6gzwfg';
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'uhicj3ig';
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

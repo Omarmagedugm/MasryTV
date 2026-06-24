@@ -110,7 +110,7 @@ export default function FanZone() {
   useEffect(() => {
     const unsubAiConfig = onSnapshot(doc(db, 'settings', 'ai_config'), (snap) => {
       if (snap.exists()) setAiConfig(snap.data());
-    }, (error) => console.warn('Could not read settings/ai_config:', error));
+    });
     return () => unsubAiConfig();
   }, []);
 
