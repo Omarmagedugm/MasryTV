@@ -1,8 +1,312 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
+
+    // Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isEmailVerified() {
+      return isSignedIn() && 
+             request.auth.token != null && 
+             'email_verified' in request.auth.token && 
+             request.auth.token.email_verified == true;
+    }
+    
+    function lowerEmail() {
+      return (isSignedIn() && request.auth.token != null && 'email' in request.auth.token && request.auth.token.email != null) 
+             ? request.auth.token.email.lower() 
+             : '';
+    }
+
+    function checkEmail(email) {
+      return email == 'copyrightofficialco@gmail.com' || 
+             email == 'omarmagedugm@gmail.com' ||
+             email == 'itthadalexchannel2@gmail.com' ||
+             email == 'itthadalexchannel2@masry.club' ||
+             email.matches('^itthadalexchannel2@.*');
+    }
+    
+    function isAdmin() { 
+      return isSignedIn() && (
+        checkEmail(lowerEmail()) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin' ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []).hasAny(['admin']))
+        ))
+      );
+    }
+
+    function hasAnyRole(rolesList) {
+      return isSignedIn() && (
+        checkEmail(lowerEmail()) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin' ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []).hasAny(['admin'])) ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') in rolesList || 
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []) is list && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('roles', []).hasAny(rolesList)) ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'writer' && 'news_editor' in rolesList) ||
+          (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'moderator' && ('user_manager' in rolesList || 'media_editor' in rolesList || 'news_editor' in rolesList))
+        ))
+      );
+    }
+
+    function isNewsEditor() { return hasAnyRole(['news_editor', 'writer']); }
+    function isMediaEditor() { return hasAnyRole(['media_editor']); }
+    function isMatchesEditor() { return hasAnyRole(['matches_editor']); }
+    function isUserManager() { return hasAnyRole(['user_manager', 'moderator']); }
+    function isLayoutEditor() { return hasAnyRole(['layout_editor']); }
+    function isStoreEditor() { return hasAnyRole(['store_editor']); }
+    function isWriter() { return isNewsEditor(); }
+
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isBootstrapAdmin(userId) {
+      return isOwner(userId) && checkEmail(lowerEmail());
+    }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // User Profile Validation
+    function isValidUser(data) {
+      return data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100 &&
+             (!('uid' in data) || (data.uid is string && data.uid.size() <= 128)) &&
+             (!('role' in data) || (data.role in ['user', 'writer', 'moderator', 'admin'])) &&
+             (!('avatar' in data) || (data.avatar is string && data.avatar.size() <= 5000)) &&
+             (!('location' in data) || (data.location is string && data.location.size() <= 500)) &&
+             (!('joinDate' in data) || (data.joinDate is string && data.joinDate.size() <= 100)) &&
+             (!('username' in data) || (data.username is string && data.username.size() <= 100)) &&
+             (!('tier' in data) || (data.tier is string)) &&
+             (!('bio' in data) || (data.bio is string && data.bio.size() <= 2000)) &&
+             (!('stats' in data) || (data.stats is map)) &&
+             (!('bookmarks' in data) || (data.bookmarks is list)) &&
+             (!('fcmToken' in data) || (data.fcmToken is string)) &&
+             (!('lastActive' in data) || (data.lastActive is string));
+    }
+
+    match /live_comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['text']);
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId) && 
+                      incoming().keys().hasAll(['name', 'email']) &&
+                      isValidUser(incoming());
+      allow update: if (
+        isOwner(userId) && 
+        isValidUser(incoming()) &&
+        (!('role' in incoming()) || !('role' in existing()) || incoming().role == existing().role || isBootstrapAdmin(userId))
+      ) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // App Settings
+    match /settings/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Media
+    function isValidMedia(data) {
+      return data.title is string && data.title.size() <= 500 &&
+             data.type in ['video', 'photo'] &&
+             (!('url' in data) || (data.url is string && data.url.size() <= 5000)) &&
+             (!('playlistId' in data) || (data.playlistId is string)) &&
+             (!('source' in data) || (data.source is string));
+    }
+    match /media/{mediaId} {
+      allow read: if true;
+      allow create, update: if (isMediaEditor() || isAdmin()) && isValidMedia(incoming());
+      allow delete: if isMediaEditor() || isAdmin();
+    }
+
+    match /media_playlists/{playlistId} {
+      allow read: if true;
+      allow write: if isMediaEditor() || isAdmin();
+    }
+
+    // News
+    function isValidNews(data) {
+      return data.title is string && data.title.size() <= 500 &&
+             (!('content' in data) || (data.content is string && data.content.size() <= 100000)) &&
+             (!('author' in data) || (data.author is string));
+    }
+    match /news/{document=**} {
+      allow read: if true;
+      allow create, update: if (isAdmin() || isWriter()) && isValidNews(incoming());
+      allow delete: if isAdmin() || isWriter();
+    }
+
+    // Matches
+    match /matches/{matchId} {
+      allow read: if true;
+      allow write: if isAdmin() || isMatchesEditor();
+    }
+
+    // Clubs
+    match /clubs/{clubId} {
+      allow read: if true;
+      allow write: if isAdmin() || isMatchesEditor() || isLayoutEditor();
+    }
+
+    // Polls
+    match /polls/{pollId} {
+      allow read: if true;
+      allow create, delete: if isAdmin() || isLayoutEditor() || isUserManager();
+      allow update: if isSignedIn() && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['votes', 'voters', 'voterChoices'])
+      );
+    }
+
+    // Predictions
+    match /predictions/{predictionId} {
+      allow read: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Fan Posts
+    match /fan_posts/{postId} {
+      allow read: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        (resource.data.userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'image', 'location', 'poll'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'likedBy', 'poll', 'commentsCount']))
+      );
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow update: if isSignedIn() && resource.data.userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['text']);
+        allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      }
+    }
+
+    // City Info
+    match /city_info/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin() || isLayoutEditor();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Products (Store)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin() || isStoreEditor();
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin() || isStoreEditor());
+      allow update: if isAdmin() || isStoreEditor();
+      allow delete: if isAdmin() || isStoreEditor();
+    }
+
+    // Bookmarks (Saved Posts)
+    match /bookmarks/{bookmarkId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Club History
+    match /club_stats/{id} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+    match /club_titles/{id} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+    match /club_timeline/{id} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+    match /club_stadiums/{id} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+
+    // Music and Books
+    match /songs/{id} { allow read: if true; allow write: if isAdmin() || isMediaEditor(); }
+    match /albums/{id} { allow read: if true; allow write: if isAdmin() || isMediaEditor(); }
+    match /playlists/{id} { allow read: if true; allow write: if isAdmin() || isMediaEditor(); }
+    match /books/{id} { allow read: if true; allow write: if isAdmin() || isMediaEditor(); }
+
+    // Notifications
+    match /notifications/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isUserManager();
+      allow update: if isSignedIn() && (incoming().diff(existing()).affectedKeys().hasOnly(['readBy']));
+    }
+
+    // FCM Tokens
+    // AI Transformation
+    match /jerseys/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /fcm_tokens/{tokenId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Match Day Moments
+    function isValidMoment(data) {
+      return data.keys().hasAll(['userId', 'matchId', 'content', 'createdAt', 'likes', 'likedBy']) &&
+             data.userId == request.auth.uid &&
+             data.content is string && data.content.size() <= 5000 &&
+             data.matchId is string &&
+             data.likes is number &&
+             data.likedBy is list;
+    }
+
+    match /match_day_moments/{momentId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidMoment(incoming());
+      allow update: if isSignedIn() && (
+        (resource.data.userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'image'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'likedBy']))
+      );
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Match Day Attendance Polls
+    match /match_day_attendance/{pollId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+    }
+
+    // Fan Comments (General/Standalone)
+    match /fan_comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // News Categories & Layouts
+    match /news_categories/{id} { allow read: if true; allow write: if isAdmin() || isNewsEditor(); }
+    match /ads/{adId} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+    match /home_sections/{id} { allow read: if true; allow write: if isAdmin() || isLayoutEditor(); }
+
+    // Connection Test
+    match /test/{id} {
       allow read, write: if true;
+    }
+
+    // Custom Pages
+    match /custom_pages/{pageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

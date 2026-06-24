@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         injectRegister: 'auto',
         workbox: {
           cleanupOutdatedCaches: true,
@@ -102,6 +102,16 @@ export default defineConfig(({ mode }) => {
       assetsDir: 'assets',
       emptyOutDir: true,
       sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/messaging', 'firebase/database'],
+            'vendor-ui': ['lucide-react', 'motion', 'react-hot-toast', 'canvas-confetti'],
+            'vendor-utils': ['date-fns', 'date-fns-tz', 'zustand', 'uuid'],
+          },
+        },
+      },
     },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(process.env.GEMINI_API_KEY || env.GEMINI_API_KEY || ''),

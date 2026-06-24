@@ -1,11 +1,11 @@
 {
-  "projectId": "masrytv-be1be",
-  "appId": "1:725960187583:web:d4183b066738c633c2f00a",
-  "apiKey": "AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0",
-  "authDomain": "masrytv-be1be.firebaseapp.com",
-  "databaseURL": "https://masrytv-be1be-default-rtdb.europe-west1.firebasedatabase.app",
-  "firestoreDatabaseId": "(default)",
-  "storageBucket": "masrytv-be1be.firebasestorage.app",
-  "messagingSenderId": "725960187583",
+  "projectId": "gen-lang-client-0195841357",
+  "appId": "1:783975227149:web:a222c629a5212da0d19a44",
+  "apiKey": "AIzaSyAHBnY47VrR4L4i9dRDhPdyYKE2GadvZAs",
+  "authDomain": "gen-lang-client-0195841357.firebaseapp.com",
+  "databaseURL": "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app",
+  "firestoreDatabaseId": "ai-studio-2920c89a-8645-4d45-82be-73df68cc5f06",
+  "storageBucket": "gen-lang-client-0195841357.firebasestorage.app",
+  "messagingSenderId": "783975227149",
   "measurementId": ""
 }
