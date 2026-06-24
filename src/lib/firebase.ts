@@ -122,21 +122,28 @@ const getEnvVarOptional = (key: string): string | undefined => {
   return value.trim();
 };
 
-const envProjectId = getEnvVarOptional('VITE_FIREBASE_PROJECT_ID');
+const authDomainEnv = getEnvVarOptional('VITE_FIREBASE_AUTH_DOMAIN');
+const apiKeyEnv = getEnvVarOptional('VITE_FIREBASE_API_KEY');
 
-const firebaseConfig = (envProjectId === "gen-lang-client-0195841357")
-  ? genLangConfig
-  : {
-      apiKey: getEnvVar('VITE_FIREBASE_API_KEY', "AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0"),
-      authDomain: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', "masrytv-be1be.firebaseapp.com"),
-      databaseURL: getEnvVar('VITE_FIREBASE_DATABASE_URL', "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app"),
-      projectId: envProjectId || "gen-lang-client-0195841357",
-      storageBucket: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', "gen-lang-client-0195841357.firebasestorage.app"),
+const useCustomProject = (authDomainEnv && authDomainEnv.includes('masrytv-be1be')) || 
+                           (apiKeyEnv && apiKeyEnv === 'AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0') ||
+                           (!authDomainEnv && !getEnvVarOptional('VITE_FIREBASE_PROJECT_ID')?.includes('gen-lang'));
+
+const firebaseConfig = useCustomProject
+  ? {
+      apiKey: apiKeyEnv || "AIzaSyCI6aRv9HmUmnBS2zJRtWBHcabT_6hcGI0",
+      authDomain: authDomainEnv || "masrytv-be1be.firebaseapp.com",
+      databaseURL: getEnvVar('VITE_FIREBASE_DATABASE_URL', "https://masrytv-be1be-default-rtdb.firebaseio.com"),
+      projectId: "masrytv-be1be",
+      storageBucket: (getEnvVarOptional('VITE_FIREBASE_STORAGE_BUCKET')?.includes('masrytv-be1be') 
+        ? import.meta.env.VITE_FIREBASE_STORAGE_BUCKET.trim() 
+        : "masrytv-be1be.appspot.com"),
       messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', "725960187583"),
-      appId: getEnvVar('VITE_FIREBASE_APP_ID', "1:783975227149:web:a222c629a5212da0d19a44"),
+      appId: getEnvVar('VITE_FIREBASE_APP_ID', "1:725960187583:web:da952e463a8be708e0da41"),
       measurementId: getEnvVar('VITE_FIREBASE_MEASUREMENT_ID', "G-W63RX2JFBJ"),
       firestoreDatabaseId: getEnvVar('VITE_FIREBASE_DATABASE_ID', "ai-studio-2920c89a-8645-4d45-82be-73df68cc5f06")
-    };
+    }
+  : genLangConfig;
 
 const app = initializeApp(firebaseConfig);
 
