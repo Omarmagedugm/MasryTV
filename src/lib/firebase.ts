@@ -95,15 +95,15 @@ export function handleStorageError(error: any, path: string) {
 }
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAHBnY47VrR4L4i9dRDhPdyYKE2GadvZAs",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "gen-lang-client-0195841357.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "gen-lang-client-0195841357",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "gen-lang-client-0195841357.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "783975227149",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:783975227149:web:a222c629a5212da0d19a44",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "",
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app",
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "ai-studio-2920c89a-8645-4d45-82be-73df68cc5f06"
+  apiKey: "AIzaSyAHBnY47VrR4L4i9dRDhPdyYKE2GadvZAs",
+  authDomain: "gen-lang-client-0195841357.firebaseapp.com",
+  projectId: "gen-lang-client-0195841357",
+  storageBucket: "gen-lang-client-0195841357.firebasestorage.app",
+  messagingSenderId: "783975227149",
+  appId: "1:783975227149:web:a222c629a5212da0d19a44",
+  measurementId: "",
+  databaseURL: "https://gen-lang-client-0195841357-default-rtdb.europe-west1.firebasedatabase.app",
+  firestoreDatabaseId: "ai-studio-2920c89a-8645-4d45-82be-73df68cc5f06"
 };
 
 export const isUsingProductionDb = false;
