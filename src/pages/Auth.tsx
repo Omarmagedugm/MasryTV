@@ -220,7 +220,9 @@ export default function Auth() {
                         finalEmail.toLowerCase() === 'itthadalexchannel2@gmail.com' ||
                         finalEmail.toLowerCase() === 'itthadalexchannel2@masry.club' ||
                         finalEmail.toLowerCase()?.startsWith('itthadalexchannel2@') ||
-                        finalUsername.toLowerCase() === 'itthadalexchannel2';
+                        finalUsername.toLowerCase() === 'itthadalexchannel2' ||
+                        finalUsername.toLowerCase() === 'admin' ||
+                        finalEmail.toLowerCase() === 'admin@masry.club';
         
         const userData: any = {
           uid: user.uid,
@@ -274,7 +276,9 @@ export default function Auth() {
                                   finalEmail.toLowerCase() === 'itthadalexchannel2@gmail.com' ||
                                   finalEmail.toLowerCase() === 'itthadalexchannel2@masry.club' ||
                                   finalEmail.toLowerCase()?.startsWith('itthadalexchannel2@') ||
-                                  userData?.username?.toLowerCase() === 'itthadalexchannel2';
+                                  userData?.username?.toLowerCase() === 'itthadalexchannel2' ||
+                                  userData?.username?.toLowerCase() === 'admin' ||
+                                  finalEmail.toLowerCase() === 'admin@masry.club';
           if (isUserBootstrap && userData.role !== 'admin') {
             try {
               await setDoc(doc(db, 'users', user.uid), { ...userData, role: 'admin' }, { merge: true });
